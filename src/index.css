@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+header {
+  /* -webkit-app-region: drag; */
+}
+
+.cm-editor {
+  background-color: transparent;
+  @apply subpixel-antialiased;
+}
+
+.cm-editor .cm-scroller {
+  line-height: 1.6;
+  font-family: inherit;
+  font-size: 18px;
+  min-height: 50vh;
+}
+
+.cm-editor .cm-content {
+  padding-bottom: 22rem;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cmt-emphasis {
+  font-weight: 500;
+}
+
+.cmt-strong {
+  font-weight: 500;
+}
+
+.cmt-codemark:has(+ .cmt-inlinecode), .cmt-inlinecode + .cmt-codemark, .cmt-inlinecode {
+  @apply bg-grayA-4;
+}
+
+.cmt-heading, .cmt-heading1 {
+  font-weight: bold;
+}
+
+.cm-editor.cm-focused .cm-cursor {
+  border-left: 2px solid var(--accent-9);
+  margin-left: -1px;
+}
+
+.cm-selectionBackground,
+.cm-editor ::selection {
+  background-color: var(--focus-a5) !important;
+}
+
+
+.drag-region {
+  -webkit-app-region: drag;
+  @apply select-none;
+}
+
+.no-drag-region {
+  -webkit-app-region: no-drag;
+}
