@@ -5,12 +5,16 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import uiSlice from "./slice/uiSlice";
 import noteSlice from './slice/noteSlice';
 import modelSlice from './slice/modelSlice';
+import chatSlice from './slice/chatSlice';
+import messageSlice from './slice/messageSlice';
 
 export const store = configureStore({
   reducer: {
     ui: uiSlice,
     notes: noteSlice,
     models: modelSlice,
+    chats: chatSlice,
+    messages: messageSlice,
   },
 });
 

@@ -20,3 +20,19 @@ export type Model = {
   digest: string;
   modified_at: string; //2023-11-04T14:56:49.277302595-07:00
 };
+
+export type Chat = {
+  id: string;
+  title: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export type Message = {
+  id: string;
+  chat_id: string;
+  role: string;
+  content: string;
+  created_at?: number;
+  updated_at?: number;
+}
