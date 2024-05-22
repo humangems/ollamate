@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { useAppSelector } from "../redux/store";
-import SidebarActions from "./SidebarActions";
 import ModelsDropdown from "./ModelsDropdown";
+import SidebarActions from "./SidebarActions";
 
 export default function MainArea() {
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);

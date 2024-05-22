@@ -1,11 +1,14 @@
-import { Button, TextField } from '@radix-ui/themes';
+import { Button, TextArea, TextField } from '@radix-ui/themes';
 
 import { useForm } from '@mantine/form';
 import Markdown from 'react-markdown';
 
-import { Chat } from '../../lib/types';
+import { Chat, Message } from '../../lib/types';
 import { newMessageThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
+import { RabbitIcon } from 'lucide-react';
+import UserMessage from './UserMessage';
+import OtherMessage from './OtherMessage';
 
 type FormValues = {
   message: string;
@@ -40,24 +43,26 @@ export default function ChatView({ chat }: ChatViewProps) {
 
   return (
     <div>
-      <h1>Chat: Redux Version</h1>
-      <hr />
       <div className="mt-4">
-        {messages.map((message) => (
-          <div key={message.id} className="flex items-start space-x-4">
-            <div className="w-12 shrink-0 font-medium text-gray-11 text-2">
-              {message.role === 'user' ? 'You' : 'Assit.'}
-            </div>
-            <div className="prose flex-1">
-              <Markdown>{message.content}</Markdown>
-            </div>
-          </div>
-        ))}
+        {messages.map((message: Message) => {
+          return message.role === 'user' ? (
+            <UserMessage message={message} />
+          ) : (
+            <OtherMessage message={message} />
+          );
+        })}
       </div>
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <div className="flex items-center mt-4">
-          <TextField.Root {...form.getInputProps('message')} className="flex-1"></TextField.Root>
+          <TextArea
+            color="gray"
+            radius="full"
+            variant="soft"
+            placeholder="Enter your message"
+            {...form.getInputProps('message')}
+            className='flex-1'
+          />
           <Button type="submit">Chat!</Button>
         </div>
       </form>

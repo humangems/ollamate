@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 import { getAllModelsThunk, modelSelectors } from "../redux/slice/modelSlice";
 import { selectModel } from "../redux/slice/uiSlice";
+import prettyBytes from "pretty-bytes";
 
 export default function ModelsDropdown() {
 
@@ -15,21 +16,27 @@ export default function ModelsDropdown() {
     dispatch(getAllModelsThunk());
   }, [])
 
-  const handleClick = (dig: string) => {
-    dispatch(selectModel(dig));
+  const handleClick = (name: string) => {
+    dispatch(selectModel(name));
   }
 
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
-        <Button variant="ghost" color="gray">
+        <Button variant="ghost" color="gray" size="3" className="font-medium">
           {selectedModel ? selectedModel.name : 'Select a model'}
           <DropdownMenu.TriggerIcon />
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {models.map((model) => (
-          <DropdownMenu.Item key={model.name} onClick={() => handleClick(model.name)}>{model.name}</DropdownMenu.Item>
+          <DropdownMenu.Item
+            key={model.name}
+            onClick={() => handleClick(model.name)}
+            shortcut={prettyBytes(model.size)}
+          >
+            {model.name}
+          </DropdownMenu.Item>
         ))}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
