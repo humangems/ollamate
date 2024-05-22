@@ -89,7 +89,6 @@ export const newMessageThunk = createAsyncThunk<void, NewMessagePayloadType>(
     thunkAPI.dispatch(startStreaming({ chatId: payload.chat_id, messageId}));
 
     for await (const part of response) {
-      // process.stdout.write(part.message.content);
       thunkAPI.dispatch(
         streamMessage({
           id: messageId,

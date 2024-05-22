@@ -34,8 +34,8 @@ export default function Sidebar() {
       className="bg-gray-2 shrink-0"
     >
       <div className="flex flex-col">
-        <div className="h-11 drag-region shrink-0">
-          <SidebarActions />
+        <div className="h-14 drag-region shrink-0">
+          {sidebarOpen && <SidebarActions />}
         </div>
         <div className="flex-1 p-2 flex flex-col">
           <div className="gap-y-2 space-y-3">

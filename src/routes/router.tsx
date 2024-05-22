@@ -2,7 +2,7 @@ import { createHashRouter } from 'react-router-dom';
 import RootPage from './root';
 import NewPage from './new';
 import IndexPage, { loader as docsLoader } from './index';
-import NotePage, { loader as noteLoader } from './note';
+import ChatPage from './chat';
 
 
 const router = createHashRouter([
@@ -12,9 +12,8 @@ const router = createHashRouter([
     children: [
       { index: true, element: <NewPage /> },
       {
-        path: 'note/:noteId',
-        loader: noteLoader,
-        element: <NotePage />,
+        path: 'chat/:chatId',
+        element: <ChatPage />,
       },
       {
         path: 'all',

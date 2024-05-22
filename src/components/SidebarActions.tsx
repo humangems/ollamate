@@ -19,7 +19,7 @@ export default function SidebarActions() {
   };
 
   return (
-    <div className={clsx('h-full flex items-center gap-4', isFullscreen ? 'pl-4' : 'pl-[84px]')}>
+    <div className={clsx('h-full flex items-center gap-4', isFullscreen ? 'pl-4' : 'pl-[88px]')}>
       <IconButton
         variant="ghost"
         className="no-drag-region"

@@ -34,7 +34,7 @@ function createWindow() {
     width: 1100,
     height: 760,
     center: true,
-    trafficLightPosition: { x: 16, y: 14 },
+    trafficLightPosition: { x: 18, y: 20 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },

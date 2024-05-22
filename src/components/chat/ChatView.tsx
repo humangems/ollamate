@@ -1,14 +1,13 @@
-import { Button, TextArea, TextField } from '@radix-ui/themes';
+import { Button, TextArea } from '@radix-ui/themes';
 
 import { useForm } from '@mantine/form';
-import Markdown from 'react-markdown';
 
+import { useNavigate } from 'react-router-dom';
 import { Chat, Message } from '../../lib/types';
 import { newMessageThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
-import { RabbitIcon } from 'lucide-react';
-import UserMessage from './UserMessage';
 import OtherMessage from './OtherMessage';
+import UserMessage from './UserMessage';
 
 type FormValues = {
   message: string;
@@ -16,6 +15,7 @@ type FormValues = {
 
 type ChatViewProps = {
   chat: Chat;
+  isNew: boolean;
 };
 
 export default function ChatView({ chat }: ChatViewProps) {
@@ -25,6 +25,8 @@ export default function ChatView({ chat }: ChatViewProps) {
     },
   });
 
+  const navigate = useNavigate();
+
   const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
   const model = useAppSelector((state) => state.ui.selectedModel);
 
@@ -32,11 +34,14 @@ export default function ChatView({ chat }: ChatViewProps) {
 
   const handleSubmit = async (values: FormValues) => {
     if (model) {
-      dispatch(newMessageThunk({ chat_id: chat.id, content: values.message, model }));
+      dispatch(newMessageThunk({ chat_id: chat.id, content: values.message, model })).then(() => {
+        navigate(`/chat/${chat.id}`, { replace: true });
+      })
       form.reset();
     } else {
       alert('Please select a model first');
     }
+
 
   };
 

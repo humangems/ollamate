@@ -1,5 +1,4 @@
-import { LoaderFunction, useLoaderData } from "react-router-dom";
-import NoteEditor from "../components/editor/NoteEditor";
+import { LoaderFunction, useParams } from "react-router-dom";
 import { getNote } from "../lib/rxdb";
 import { Note } from "../lib/types";
 
@@ -13,11 +12,14 @@ export const loader: LoaderFunction = async({ params}): Promise<LoaderData> => {
 }
 
 export default function NotePage() {
-  const { note }: { note: Note } = useLoaderData() as { note: Note };
+  // const { note }: { note: Note } = useLoaderData() as { note: Note };
+  const {chatId} = useParams();
+
+  console.log(chatId)
 
   return (
     <div className="mx-auto">
-      <NoteEditor note={note} />
+      Chat {chatId}
     </div>
   );
 }
