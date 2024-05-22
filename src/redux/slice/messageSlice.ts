@@ -2,13 +2,13 @@ import {
   PayloadAction,
   createAsyncThunk,
   createEntityAdapter,
+  createSelector,
   createSlice,
   nanoid,
 } from '@reduxjs/toolkit';
 import { Message } from '../../lib/types';
 import ollama from 'ollama/browser';
 import { RootState } from '../store';
-import { m } from 'framer-motion';
 
 const messageAdapter = createEntityAdapter<Message>();
 
@@ -62,6 +62,7 @@ export const messageSlice = createSlice({
 export type NewMessagePayloadType = {
   chat_id: string;
   content: string;
+  model: string;
 };
 
 export const newMessageThunk = createAsyncThunk<void, NewMessagePayloadType>(
@@ -78,7 +79,7 @@ export const newMessageThunk = createAsyncThunk<void, NewMessagePayloadType>(
     });
 
     const response = await ollama.chat({
-      model: 'yi:34b-chat',
+      model: payload.model,
       messages: [...history, message],
       stream: true,
     });
@@ -108,9 +109,14 @@ export const newMessageThunk = createAsyncThunk<void, NewMessagePayloadType>(
 
 export const messageSelectors = messageAdapter.getSelectors();
 
-export const selectMessagesByChatId = (state: RootState, chat_id: string) => {
-  return messageSelectors.selectAll(state.messages).filter((m) => m.chat_id === chat_id);
-}
+export const selectMessagesByChatId = createSelector(
+  (state: RootState) => messageSelectors.selectAll(state.messages),
+  (_state, chatId: string) => chatId,
+  (messages, chatId) => {
+    return messages.filter((m: Message) => m.chat_id === chatId);
+  }
+);
+
 
 // Action creators are generated for each case reducer function
 export const { allModelsLoaded, streamMessage, startStreaming, newUserMessage } = messageSlice.actions;

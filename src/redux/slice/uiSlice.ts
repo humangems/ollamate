@@ -1,10 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 export interface UIState {
   writing: boolean;
   sidebarOpen: boolean;
   isFullscreen: boolean;
   settingOpen: boolean;
+  selectedModel: string | null;
 }
 
 const initialState: UIState = {
@@ -12,6 +13,7 @@ const initialState: UIState = {
   sidebarOpen: true,
   isFullscreen: false,
   settingOpen: false,
+  selectedModel: null,
 };
 
 export const uiSlice = createSlice({
@@ -39,10 +41,13 @@ export const uiSlice = createSlice({
     hideSetting: (state) => {
       state.settingOpen = false;
     },
+    selectModel: (state, action: PayloadAction<string>) => {
+      state.selectedModel = action.payload;
+    }
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { startEditing, stopEditing, toggleSidebar, enterFullscreen, leaveFullscreen, showSetting, hideSetting } = uiSlice.actions;
+export const { startEditing, stopEditing, toggleSidebar, enterFullscreen, leaveFullscreen, showSetting, hideSetting, selectModel } = uiSlice.actions;
 
 export default uiSlice.reducer;

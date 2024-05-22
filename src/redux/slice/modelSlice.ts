@@ -3,7 +3,7 @@ import { getModels } from '../../lib/modelApi';
 import { Model } from '../../lib/types';
 
 const modelAdapter = createEntityAdapter<Model, string>({
-  selectId: (model) => model.digest
+  selectId: (model) => model.name
 });
 
 export const modelSlice = createSlice({

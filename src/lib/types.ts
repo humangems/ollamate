@@ -35,4 +35,7 @@ export type Message = {
   content: string;
   created_at?: number;
   updated_at?: number;
-}
+  eval_count: number;
+  eval_duration: number;
+  done: boolean;
+};

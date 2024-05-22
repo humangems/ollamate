@@ -1,13 +1,11 @@
 import { Button, TextField } from '@radix-ui/themes';
 
-import ollama from 'ollama/browser';
-import Markdown from 'react-markdown';
 import { useForm } from '@mantine/form';
+import Markdown from 'react-markdown';
 
-import { useState } from 'react';
 import { Chat } from '../../lib/types';
-import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { newMessageThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
+import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
 
 type FormValues = {
   message: string;
@@ -24,13 +22,19 @@ export default function ChatView({ chat }: ChatViewProps) {
     },
   });
 
-  const messages = useAppSelector((state) => selectMessagesByChatId(state, chat.id));
+  const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
+  const model = useAppSelector((state) => state.ui.selectedModel);
 
   const dispatch = useAppDispatch();
 
   const handleSubmit = async (values: FormValues) => {
-    dispatch(newMessageThunk({ chat_id: chat.id, content: values.message }))
-    form.reset();
+    if (model) {
+      dispatch(newMessageThunk({ chat_id: chat.id, content: values.message, model }));
+      form.reset();
+    } else {
+      alert('Please select a model first');
+    }
+
   };
 
 
@@ -46,7 +50,6 @@ export default function ChatView({ chat }: ChatViewProps) {
             </div>
             <div className="prose flex-1">
               <Markdown>{message.content}</Markdown>
-              <div>{(message.eval_count * 10 ^ 9 / message.eval_duration)}</div>
             </div>
           </div>
         ))}
