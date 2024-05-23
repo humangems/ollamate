@@ -4,6 +4,8 @@ import { SearchIcon, SettingsIcon } from 'lucide-react';
 import { showSetting } from '../redux/slice/uiSlice';
 import { useAppDispatch, useAppSelector } from '../redux/store';
 import SidebarActions from './SidebarActions';
+import { chatSelectors } from '../redux/slice/chatSlice';
+import ChatItem from './chat/ChatItem';
 
 type Conversations = {
   [key: string]: string[];
@@ -22,6 +24,7 @@ const conversations: Conversations = {
 export default function Sidebar() {
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
   const dispatch = useAppDispatch();
+  const chats = useAppSelector(state => chatSelectors.selectAll(state.chats));
 
   const handleSettingClick = () => {
     dispatch(showSetting());
@@ -47,20 +50,8 @@ export default function Sidebar() {
           </div>
 
           <div className="flex-1">
-            {Object.keys(conversations).map((key) => (
-              <div key={key} className="mt-4 w-full overflow-hidden">
-                <h3 className="text-1 px-2 my-1 text-gray-11">{key}</h3>
-                <div className="text-2">
-                  {conversations[key].map((conv: string) => (
-                    <div
-                      key={conv}
-                      className="flex items-center whitespace-nowrap h-8 cursor-pointer px-2 rounded-2 hover:bg-gray-4"
-                    >
-                      {conv}
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {chats.map((chat) => (
+              <ChatItem chat={chat} key={chat.id} />
             ))}
           </div>
 
