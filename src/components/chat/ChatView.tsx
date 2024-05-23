@@ -51,7 +51,7 @@ export default function ChatView({ chat }: ChatViewProps) {
 
   return (
     <div>
-      <div className="mt-4 pb-20">
+      <div className="mt-4 pb-32">
         {messages.map((message: Message) => {
           return message.role === 'user' ? (
             <UserMessage message={message} />

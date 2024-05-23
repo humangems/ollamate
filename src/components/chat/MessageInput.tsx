@@ -45,9 +45,9 @@ export default function MessageInput({ chatId, model }: MessageInputProps) {
   }
 
   return (
-    <div className="fixed bottom-4 w-[768px]">
+    <div className="fixed bottom-8 w-[768px]">
       <form onSubmit={form.onSubmit(handleSubmit)} ref={formRef}>
-        <div className="flex min-h-12 relative items-center justify-between rounded-[24px] bg-gray-2 px-2">
+        <div className="flex min-h-12 relative items-center justify-between rounded-[24px] bg-grayA-3 px-2 backdrop-blur">
           <div className="size-8 shrink-0">
             <div className="absolute bottom-2 ">
               <button className="size-8 rounded-full flex items-center justify-center hover:bg-gray-4">
@@ -71,7 +71,7 @@ export default function MessageInput({ chatId, model }: MessageInputProps) {
             <div className="absolute bottom-2">
               <button
                 type="submit"
-                className="rounded-full size-8 bg-accent-9 text-[#fff] hover:bg-gray-4 active:bg-gray-5 flex items-center justify-center"
+                className="rounded-full size-8 bg-grayA-3 hover:bg-gray-4 active:bg-gray-5 flex items-center justify-center"
               >
                 <ArrowUpIcon size={20} />
               </button>
