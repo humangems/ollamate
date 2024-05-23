@@ -6,31 +6,37 @@ import {
   createSlice,
   nanoid,
 } from '@reduxjs/toolkit';
-import { Message } from '../../lib/types';
+import { Chat, Message } from '../../lib/types';
 import ollama from 'ollama/browser';
 import { RootState } from '../store';
+import { upsertChat } from '../../lib/chatApi';
 
 const messageAdapter = createEntityAdapter<Message>();
-
-type StartStreamingType = {
-  chatId: string;
-  messageId: string;
-}
 
 type NewUserMessageType = {
   chatId: string;
   content: string;
-}
+};
 
 type StreamEventType = {
   chatId: string;
   messageId: string;
   isNewChat: boolean;
-}
+  model: string;
+  chatCreatedAt?: number;
+};
+
+type InitialState = {
+  isStreaming: Record<string, boolean>;
+};
+
+const initialState:InitialState = {
+  isStreaming: {},
+};
 
 export const messageSlice = createSlice({
   name: 'messages',
-  initialState: messageAdapter.getInitialState(),
+  initialState: messageAdapter.getInitialState(initialState),
   reducers: {
     allModelsLoaded: messageAdapter.setAll,
 
@@ -54,6 +60,7 @@ export const messageSlice = createSlice({
         created_at: Date.now(),
         updated_at: Date.now(),
       });
+      state.isStreaming[action.payload.messageId] = true;
     },
 
     streaming: (state, action: PayloadAction<Message>) => {
@@ -63,7 +70,9 @@ export const messageSlice = createSlice({
       state.entities[action.payload.id].updated_at = Date.now();
     },
 
-    streamEnd: (_state, _action: PayloadAction<StreamEventType>) => {},
+    streamEnd: (state, action: PayloadAction<StreamEventType>) => {
+      state.isStreaming[action.payload.messageId] = false;
+    },
   },
 });
 
@@ -78,18 +87,27 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
   'messages/llmChat',
   async (payload, thunkAPI) => {
     const messageId = nanoid();
-    const systemMsg = {role: "system", content: "You are a helpful assistant."}
+    const systemMsg = { role: 'system', content: 'You are a helpful assistant.' };
     thunkAPI.dispatch(newUserMessage({ chatId: payload.chatId, content: payload.content }));
 
     const state = thunkAPI.getState() as RootState;
-    const history = Object.values(state.messages.entities).filter((m) => m.chat_id === payload.chatId).map((m) => {
-      return {
-        role: m.role,
-        content: m.content,
-      }
-    });
+    const history = Object.values(state.messages.entities)
+      .filter((m) => m.chat_id === payload.chatId)
+      .map((m) => {
+        return {
+          role: m.role,
+          content: m.content,
+        };
+      });
 
-    thunkAPI.dispatch(streamStart({ chatId: payload.chatId, messageId, isNewChat: payload.isNewChat }));
+    thunkAPI.dispatch(
+      streamStart({
+        chatId: payload.chatId,
+        messageId,
+        isNewChat: payload.isNewChat,
+        model: payload.model,
+      })
+    );
 
     const response = await ollama.chat({
       model: payload.model,
@@ -110,8 +128,17 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
         })
       );
     }
-
-    thunkAPI.dispatch(streamEnd({ chatId: payload.chatId, messageId, isNewChat: payload.isNewChat }));
+    const chat: Chat = {
+      id: payload.chatId,
+      model: payload.model,
+    };
+    if (payload.isNewChat) {
+      chat.created_at = Date.now();
+    }
+    await upsertChat(chat);
+    thunkAPI.dispatch(
+      streamEnd({ chatId: payload.chatId, messageId, isNewChat: payload.isNewChat, model: payload.model, chatCreatedAt: chat.created_at })
+    );
   }
 );
 
@@ -125,8 +152,8 @@ export const selectMessagesByChatId = createSelector(
   }
 );
 
-
 // Action creators are generated for each case reducer function
-export const { allModelsLoaded, streaming, streamStart, streamEnd, newUserMessage } = messageSlice.actions;
+export const { allModelsLoaded, streaming, streamStart, streamEnd, newUserMessage } =
+  messageSlice.actions;
 
 export default messageSlice.reducer;

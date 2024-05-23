@@ -1,10 +1,12 @@
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import { getModels } from '../../lib/modelApi';
+import { getAllChats } from '../../lib/chatApi';
 import { Chat, Model } from '../../lib/types';
 import { streamEnd } from './messageSlice';
 
 
-const chatAdapter = createEntityAdapter<Chat>();
+const chatAdapter = createEntityAdapter<Chat>({
+  sortComparer: (a, b) => b.created_at! - a.created_at!,
+});
 
 export const chatSlice = createSlice({
   name: 'chats',
@@ -12,29 +14,29 @@ export const chatSlice = createSlice({
     newChatId: null as string | null,
   }),
   reducers: {
-    allModelsLoaded: chatAdapter.setAll,
+    allChatsLoaded: chatAdapter.setAll,
   },
 
   extraReducers: (builder) => {
     builder.addCase(streamEnd, (state, action) => {
       let chat:Chat = {
         id: action.payload.chatId,
-        updated_at: Date.now(),
+        model: action.payload.model,
       }
       if (action.payload.isNewChat) {
         state.newChatId = action.payload.chatId;
-        chat.created_at = Date.now();
+        chat.created_at = action.payload.chatCreatedAt;
       }
       chatAdapter.upsertOne(state, chat);
     });
   }
 });
 
-export const getAllModelsThunk = createAsyncThunk<Model[]>(
+export const getAllChatsThunk = createAsyncThunk<Model[]>(
   'chats/getAllChats',
   async (_payload, thunkAPI) => {
-    const response = await getModels();
-    thunkAPI.dispatch(allModelsLoaded(response));
+    const response = await getAllChats();
+    thunkAPI.dispatch(allChatsLoaded(response));
     return response;
   }
 );
@@ -43,6 +45,6 @@ export const getAllModelsThunk = createAsyncThunk<Model[]>(
 export const chatSelectors = chatAdapter.getSelectors();
 
 // Action creators are generated for each case reducer function
-export const { allModelsLoaded } = chatSlice.actions;
+export const { allChatsLoaded } = chatSlice.actions;
 
 export default chatSlice.reducer;

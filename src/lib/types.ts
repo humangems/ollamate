@@ -23,10 +23,11 @@ export type Model = {
 
 export type Chat = {
   id: string;
+  model: string;
   title?: string;
   created_at?: number;
   updated_at?: number;
-}
+};
 
 export type Message = {
   id: string;

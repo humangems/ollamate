@@ -4,27 +4,18 @@ import { SearchIcon, SettingsIcon } from 'lucide-react';
 import { showSetting } from '../redux/slice/uiSlice';
 import { useAppDispatch, useAppSelector } from '../redux/store';
 import SidebarActions from './SidebarActions';
-import { chatSelectors } from '../redux/slice/chatSlice';
+import { chatSelectors, getAllChatsThunk } from '../redux/slice/chatSlice';
 import ChatItem from './chat/ChatItem';
-
-type Conversations = {
-  [key: string]: string[];
-};
-
-const conversations: Conversations = {
-  Today: ['世无英雄，竟使竖子成名。', 'User Request: Summary Title', 'Relationship: AI vs Actress'],
-  Yesterday: [
-    'Product Decision: Musing vs. OllaChat',
-    'Ollama Versatile AI Framework',
-    'Ollama Desktop App',
-    'Flex AI Chat Client',
-  ],
-};
+import { useEffect } from 'react';
 
 export default function Sidebar() {
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
   const dispatch = useAppDispatch();
   const chats = useAppSelector(state => chatSelectors.selectAll(state.chats));
+
+  useEffect(() => {
+    dispatch(getAllChatsThunk());
+  }, [])
 
   const handleSettingClick = () => {
     dispatch(showSetting());

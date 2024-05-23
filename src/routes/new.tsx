@@ -25,7 +25,7 @@ export default function NewPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <ChatView chat={{id: chatId}} isNewChat={true}/>
+      <ChatView chat={{ id: chatId, model: 'llama3:latest' }} isNewChat={true} />
     </div>
   );
 }

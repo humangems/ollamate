@@ -7,7 +7,7 @@ import { nanoid } from '@reduxjs/toolkit';
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
-  name: 'mydatabase',
+  name: 'ollamate',
   storage: getRxStorageDexie(),
 });
 
@@ -36,10 +36,41 @@ const noteSchema = {
   required: ['id', 'content', 'created_at', 'updated_at'],
 };
 
-const collections = await db.addCollections({
+const chatSchema = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string',
+      maxLength: 21, // <- the primary key must have set maxLength
+    },
+    model: {
+      type: 'string',
+    },
+    provider: {
+      type: 'string',
+    },
+    title: {
+      type: 'string',
+    },
+    created_at: {
+      type: 'number',
+    },
+    updated_at: {
+      type: 'number',
+    },
+  },
+  required: ['id', 'model', 'created_at', 'updated_at'],
+};
+
+export const collections = await db.addCollections({
   notes: {
     schema: noteSchema,
   },
+  chats: {
+    schema: chatSchema,
+  }
 });
 
 export async function getAllNotes() {
