@@ -22,18 +22,17 @@ type NewUserMessageType = {
   content: string;
 }
 
+type StreamEventType = {
+  chatId: string;
+  messageId: string;
+  isNewChat: boolean;
+}
+
 export const messageSlice = createSlice({
   name: 'messages',
   initialState: messageAdapter.getInitialState(),
   reducers: {
     allModelsLoaded: messageAdapter.setAll,
-    streamMessage: (state, action: PayloadAction<Message>) => {
-      state.entities[action.payload.id].content += action.payload.content;
-      state.entities[action.payload.id].eval_count = action.payload.eval_count;
-      state.entities[action.payload.id].eval_duration = action.payload.eval_duration;
-      state.entities[action.payload.id].updated_at = Date.now();
-
-    },
 
     newUserMessage: (state, action: PayloadAction<NewUserMessageType>) => {
       messageAdapter.addOne(state, {
@@ -46,7 +45,7 @@ export const messageSlice = createSlice({
       });
     },
 
-    startStreaming: (state, action: PayloadAction<StartStreamingType>) => {
+    streamStart: (state, action: PayloadAction<StreamEventType>) => {
       messageAdapter.addOne(state, {
         id: action.payload.messageId,
         chat_id: action.payload.chatId,
@@ -56,43 +55,53 @@ export const messageSlice = createSlice({
         updated_at: Date.now(),
       });
     },
+
+    streaming: (state, action: PayloadAction<Message>) => {
+      state.entities[action.payload.id].content += action.payload.content;
+      state.entities[action.payload.id].eval_count = action.payload.eval_count;
+      state.entities[action.payload.id].eval_duration = action.payload.eval_duration;
+      state.entities[action.payload.id].updated_at = Date.now();
+    },
+
+    streamEnd: (_state, _action: PayloadAction<StreamEventType>) => {},
   },
 });
 
 export type NewMessagePayloadType = {
-  chat_id: string;
+  chatId: string;
   content: string;
   model: string;
+  isNewChat: boolean;
 };
 
-export const newMessageThunk = createAsyncThunk<void, NewMessagePayloadType>(
-  'messages/new',
+export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
+  'messages/llmChat',
   async (payload, thunkAPI) => {
     const messageId = nanoid();
-    const message = { role: 'user', content: payload.content };
+    const systemMsg = {role: "system", content: "You are a helpful assistant."}
+    thunkAPI.dispatch(newUserMessage({ chatId: payload.chatId, content: payload.content }));
+
     const state = thunkAPI.getState() as RootState;
-    const history = Object.values(state.messages.entities).filter((m) => m.chat_id === payload.chat_id).map((m) => {
+    const history = Object.values(state.messages.entities).filter((m) => m.chat_id === payload.chatId).map((m) => {
       return {
         role: m.role,
         content: m.content,
       }
     });
 
+    thunkAPI.dispatch(streamStart({ chatId: payload.chatId, messageId, isNewChat: payload.isNewChat }));
+
     const response = await ollama.chat({
       model: payload.model,
-      messages: [...history, message],
+      messages: [systemMsg, ...history],
       stream: true,
     });
 
-    thunkAPI.dispatch(newUserMessage({ chatId: payload.chat_id, content: payload.content }));
-
-    thunkAPI.dispatch(startStreaming({ chatId: payload.chat_id, messageId}));
-
     for await (const part of response) {
       thunkAPI.dispatch(
-        streamMessage({
+        streaming({
           id: messageId,
-          chat_id: messageId,
+          chat_id: payload.chatId,
           role: part.message.role,
           content: part.message.content,
           eval_count: part.eval_count,
@@ -102,7 +111,7 @@ export const newMessageThunk = createAsyncThunk<void, NewMessagePayloadType>(
       );
     }
 
-
+    thunkAPI.dispatch(streamEnd({ chatId: payload.chatId, messageId, isNewChat: payload.isNewChat }));
   }
 );
 
@@ -118,6 +127,6 @@ export const selectMessagesByChatId = createSelector(
 
 
 // Action creators are generated for each case reducer function
-export const { allModelsLoaded, streamMessage, startStreaming, newUserMessage } = messageSlice.actions;
+export const { allModelsLoaded, streaming, streamStart, streamEnd, newUserMessage } = messageSlice.actions;
 
 export default messageSlice.reducer;

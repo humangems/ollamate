@@ -1,12 +1,6 @@
 import { useDocumentTitle } from "@mantine/hooks";
 import { Heading } from "@radix-ui/themes";
-import dayjs from "dayjs";
-import { groupBy } from 'lodash';
-import { useLoaderData } from "react-router-dom";
 import { getAllNotes } from "../lib/rxdb";
-import { Note } from "../lib/types";
-
-
 
 export async function loader() {
 
@@ -17,7 +11,6 @@ export async function loader() {
 }
 
 export default function IndexPage() {
-  const { docs }: { docs: Note[] } = useLoaderData() as { docs: Note[] };
   useDocumentTitle("Flow");
 
   return (

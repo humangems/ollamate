@@ -1,6 +1,9 @@
 import { LoaderFunction, useParams } from "react-router-dom";
 import { getNote } from "../lib/rxdb";
 import { Note } from "../lib/types";
+import ChatView from "../components/chat/ChatView";
+import { useAppSelector } from "../redux/store";
+import { chatSelectors } from "../redux/slice/chatSlice";
 
 type LoaderData = {
   note: Note;
@@ -12,14 +15,16 @@ export const loader: LoaderFunction = async({ params}): Promise<LoaderData> => {
 }
 
 export default function NotePage() {
-  // const { note }: { note: Note } = useLoaderData() as { note: Note };
+
   const {chatId} = useParams();
 
-  console.log(chatId)
+  const chat = useAppSelector((state) => chatSelectors.selectById(state.chats, chatId!));
+
+  if (!chat) return null;
 
   return (
-    <div className="mx-auto">
-      Chat {chatId}
+    <div className="mx-auto max-w-3xl">
+      <ChatView chat={chat} isNewChat={false} />
     </div>
   );
 }

@@ -1,11 +1,9 @@
 import { useForm } from '@mantine/form';
-import { Button, TextArea } from '@radix-ui/themes';
-import { useNavigate } from 'react-router-dom';
-import { newMessageThunk } from '../../redux/slice/messageSlice';
-import { useAppDispatch } from '../../redux/store';
-import TextareaAutosize from 'react-textarea-autosize';
 import { ArrowUpIcon, PlusIcon } from 'lucide-react';
 import { useRef } from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
+import { llmChatThunk } from '../../redux/slice/messageSlice';
+import { useAppDispatch } from '../../redux/store';
 
 type FormValues = {
   message: string;
@@ -14,11 +12,11 @@ type FormValues = {
 type MessageInputProps = {
   chatId: string;
   model: string | null;
+  isNewChat: boolean;
 };
 
-export default function MessageInput({ chatId, model }: MessageInputProps) {
+export default function MessageInput({ chatId, model, isNewChat = false }: MessageInputProps) {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
   const form = useForm<FormValues>({
     initialValues: {
@@ -28,9 +26,8 @@ export default function MessageInput({ chatId, model }: MessageInputProps) {
 
   const handleSubmit = async (values: FormValues) => {
     if (model) {
-      dispatch(newMessageThunk({ chat_id: chatId, content: values.message, model })).then(() => {
-        // navigate(`/chat/${chatId}`, { replace: true });
-      });
+      // dispatch(newUserMessage({ chatId, content: values.message }));
+      dispatch(llmChatThunk({ chatId: chatId, content: values.message, model, isNewChat }));
       form.reset();
     } else {
       alert('Please select a model first');
@@ -42,7 +39,7 @@ export default function MessageInput({ chatId, model }: MessageInputProps) {
       e.preventDefault();
       handleSubmit(form.values);
     }
-  }
+  };
 
   return (
     <div className="fixed bottom-8 w-[768px]">

@@ -1,14 +1,31 @@
 import { nanoid } from '@reduxjs/toolkit';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ChatView from '../components/chat/ChatView';
-import { Chat } from '../lib/types';
+import { useAppSelector } from '../redux/store';
 
 export default function NewPage() {
 
-  const chat:Chat = { id: nanoid(), title: '', created_at: Date.now(), updated_at: Date.now() };
+  const [chatId, setChatId] = useState<string>();
+
+  const newChatId = useAppSelector((state) => state.chats.newChatId);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+
+    if (newChatId && newChatId === chatId) {
+      navigate(`/chat/${newChatId}`);
+    } else {
+      setChatId(nanoid());
+    }
+
+  }, [newChatId])
+
+  if (!chatId) return null;
 
   return (
     <div className="mx-auto max-w-3xl">
-      <ChatView chat={chat} isNew={true}/>
+      <ChatView chat={{id: chatId}} isNewChat={true}/>
     </div>
   );
 }

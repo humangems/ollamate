@@ -23,9 +23,9 @@ export type Model = {
 
 export type Chat = {
   id: string;
-  title: string;
-  created_at: number;
-  updated_at: number;
+  title?: string;
+  created_at?: number;
+  updated_at?: number;
 }
 
 export type Message = {
@@ -35,7 +35,13 @@ export type Message = {
   content: string;
   created_at?: number;
   updated_at?: number;
-  eval_count: number;
-  eval_duration: number;
-  done: boolean;
+  eval_count?: number;
+  eval_duration?: number;
+  done?: boolean;
+};
+
+export type UserMessage = {
+  chat_id: string;
+  content: string;
+  is_new_chat: boolean;
 };
