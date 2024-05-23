@@ -1,13 +1,16 @@
-import { Button, TextArea } from '@radix-ui/themes';
 
 import { useForm } from '@mantine/form';
 
+import { ArrowUpIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
 import { Chat, Message } from '../../lib/types';
 import { newMessageThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
+import MessageInput from './MessageInput';
 import OtherMessage from './OtherMessage';
 import UserMessage from './UserMessage';
+
 
 type FormValues = {
   message: string;
@@ -48,7 +51,7 @@ export default function ChatView({ chat }: ChatViewProps) {
 
   return (
     <div>
-      <div className="mt-4">
+      <div className="mt-4 pb-20">
         {messages.map((message: Message) => {
           return message.role === 'user' ? (
             <UserMessage message={message} />
@@ -58,19 +61,7 @@ export default function ChatView({ chat }: ChatViewProps) {
         })}
       </div>
 
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <div className="flex items-center mt-4">
-          <TextArea
-            color="gray"
-            radius="full"
-            variant="soft"
-            placeholder="Enter your message"
-            {...form.getInputProps('message')}
-            className='flex-1'
-          />
-          <Button type="submit">Chat!</Button>
-        </div>
-      </form>
+      <MessageInput chatId={chat.id} model={model} />
     </div>
   );
 }

@@ -24,7 +24,7 @@ export default function MainArea() {
         </div>
       </div>
       <div className="h-[calc(100vh-56px)] overflow-y-auto">
-        <div className="pt-14 z-0 px-4">
+        <div className="pt-4 z-0 px-4">
           <Outlet />
         </div>
       </div>
