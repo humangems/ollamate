@@ -24,7 +24,7 @@ export default function NotePage() {
 
   return (
     <div className="">
-      <ChatView chat={chat} isNewChat={false} />
+      <ChatView chatId={chat.id} model={chat.model} isNewChat={false} />
     </div>
   );
 }

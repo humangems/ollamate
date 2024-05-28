@@ -25,7 +25,7 @@ export default function NewPage() {
 
   return (
     <div className="">
-      <ChatView chat={{ id: chatId, model: 'llama3:latest' }} isNewChat={true} />
+      <ChatView chatId={chatId} model='llama3:latest' isNewChat={true} />
     </div>
   );
 }

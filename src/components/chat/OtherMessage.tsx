@@ -28,10 +28,9 @@ export default function OtherMessage({ message }: { message: Message }) {
             {message.content}
           </Markdown>
           <div className="flex items-center space-x-1 text-2 text-gray-11">
-            Model:
             <div>{message.model}</div>
+            {isStreaming && <LoaderIcon className="animate-spin" size={14} />}
           </div>
-          {isStreaming && <LoaderIcon className="animate-spin" />}
         </div>
       </div>
     </div>

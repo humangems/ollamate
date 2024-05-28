@@ -188,6 +188,14 @@ export const selectMessagesByChatId = createSelector(
   }
 );
 
+export const countMessagesByChatId = createSelector(
+  (state: RootState) => messageSelectors.selectAll(state.messages),
+  (_state, chatId: string) => chatId,
+  (messages: Message[], chatId) => {
+    return messages.filter((m: Message) => m.chat_id === chatId).length;
+  }
+);
+
 // Action creators are generated for each case reducer function
 export const { allModelsLoaded, streaming, streamStart, streamEnd, newUserMessage } =
   messageSlice.actions;
