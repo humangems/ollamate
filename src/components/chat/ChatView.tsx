@@ -6,35 +6,35 @@ import ModelSelect from '../ModelSelect';
 import SidebarActions from '../SidebarActions';
 import MessageHistory from './MessageHistory';
 import MessageInput from './MessageInput';
+import { Chat } from '../../lib/types';
 
 type ChatViewProps = {
-  chatId: string;
-  model: string;
+  chat: Chat;
   isNewChat: boolean;
 };
 
-export default function ChatView({ chatId, model, isNewChat = false }: ChatViewProps) {
-  const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chatId));
+export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
+  const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
   const dispatch = useAppDispatch();
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
-  const [internalModel, setInternalModel] = useState(model);
+  const [internalModel, setInternalModel] = useState(chat.model);
 
   useEffect(() => {
-    dispatch(getMessagesThunk(chatId));
-  }, [chatId]);
+    dispatch(getMessagesThunk(chat.id));
+  }, [chat.id]);
 
   useEffect(() =>{
-    setInternalModel(model)
-  }, [model])
+    setInternalModel(chat.model)
+  }, [chat.model])
 
   useEffect(() => {
-    // if (chat.title) return; // TODO
+    if (chat.title) return;
 
     if (messages.length !== 2) return;
 
     dispatch(
       generateTitleThunk({
-        chatId: chatId,
+        chatId: chat.id,
         messages: messages.map((m) => {
           return {
             role: m.role,
@@ -44,11 +44,11 @@ export default function ChatView({ chatId, model, isNewChat = false }: ChatViewP
         model: internalModel,
       })
     );
-  }, [chatId]);
+  }, [chat.id]);
 
   const handleModelChange = (value: string) => {
     if (!isNewChat) {
-      dispatch(updateModelThunk({ chatId: chatId, model: value }));
+      dispatch(updateModelThunk({ chatId: chat.id, model: value }));
     } else {
       setInternalModel(value);
     }
@@ -71,11 +71,11 @@ export default function ChatView({ chatId, model, isNewChat = false }: ChatViewP
       </div>
 
       <div className="flex-1 w-full">
-        <MessageHistory chatId={chatId} />
+        <MessageHistory chatId={chat.id} />
       </div>
 
       <div className="shrink-0 flex items-center py-4">
-        <MessageInput chatId={chatId} model={internalModel} isNewChat={isNewChat} />
+        <MessageInput chatId={chat.id} model={internalModel} isNewChat={isNewChat} />
       </div>
     </div>
   );
