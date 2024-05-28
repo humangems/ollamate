@@ -7,6 +7,7 @@ import OtherMessage from './OtherMessage';
 import UserMessage from './UserMessage';
 import { generateTitleThunk, updateModelThunk } from '../../redux/slice/chatSlice';
 import ModelSelect from '../ModelSelect';
+import SidebarActions from '../SidebarActions';
 
 type ChatViewProps = {
   chat: Chat;
@@ -17,6 +18,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
   const dispatch = useAppDispatch();
   const messagesRef = useRef<HTMLDivElement>(null);
+  const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
 
   useEffect(() => {
     dispatch(getMessagesThunk(chat.id));
@@ -55,8 +57,13 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="px-6 bg-[#fff] h-14 flex items-center shrink-0 drag-region">
-        <div className="no-drag-region">
+      <div className=" bg-[#fff] h-14 flex items-center shrink-0 drag-region">
+        {!sidebarOpen && (
+          <div className="mr-4">
+            <SidebarActions />
+          </div>
+        )}
+        <div className="no-drag-region px-6">
           <ModelSelect value={chat.model} onChange={handleModelChange} />
         </div>
       </div>
