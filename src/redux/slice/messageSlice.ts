@@ -166,7 +166,8 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       id: messageId,
       chat_id: payload.chatId,
       content: content,
-      role: "assistant"
+      role: "assistant",
+      model: payload.model
     }
 
     await addMessage(newMsg)

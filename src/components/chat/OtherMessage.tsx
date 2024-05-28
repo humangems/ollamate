@@ -5,6 +5,7 @@ import { Message } from '../../lib/types';
 import { useAppSelector } from '../../redux/store';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+import rehypeMathjax from 'rehype-mathjax'
 import 'katex/dist/katex.min.css';
 
 
@@ -20,9 +21,13 @@ export default function OtherMessage({ message }: { message: Message }) {
           </div>
         </div>
         <div className="prose flex-1">
-          <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex, rehypeMathjax]}
+          >
             {message.content}
           </Markdown>
+          <div>{message.model}</div>
           {isStreaming && <LoaderIcon className="animate-spin" />}
         </div>
       </div>

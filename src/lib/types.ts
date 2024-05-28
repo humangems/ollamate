@@ -34,6 +34,7 @@ export type Message = {
   chat_id: string;
   role: string;
   content: string;
+  model?: string;
   created_at?: number;
   updated_at?: number;
   eval_count?: number;
