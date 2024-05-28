@@ -9,7 +9,7 @@ type ChatItemProps = {
 };
 
 export default function ChatItem({ chat, active }: ChatItemProps) {
-  const title = chat.title || dayjs(chat.created_at).format('MMM D HH:mm');
+  const title = chat.title || dayjs(chat.created_at).format('[New Chat] MMM D HH:mm');
   return (
     <Link to={`/chat/${chat.id}`}>
       <div

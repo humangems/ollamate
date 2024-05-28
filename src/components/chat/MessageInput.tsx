@@ -26,7 +26,6 @@ export default function MessageInput({ chatId, model, isNewChat = false }: Messa
 
   const handleSubmit = async (values: FormValues) => {
     if (model) {
-      // dispatch(newUserMessage({ chatId, content: values.message }));
       dispatch(llmChatThunk({ chatId: chatId, content: values.message, model, isNewChat }));
       form.reset();
     } else {
@@ -47,7 +46,7 @@ export default function MessageInput({ chatId, model, isNewChat = false }: Messa
         <div className="flex min-h-12 relative items-center justify-between rounded-[24px] bg-grayA-3 px-2 backdrop-blur">
           <div className="size-8 shrink-0">
             <div className="absolute bottom-2 ">
-              <button className="size-8 rounded-full flex items-center justify-center hover:bg-gray-4">
+              <button className="size-8 rounded-full flex items-center justify-center hover:bg-gray-4" type="button">
                 <PlusIcon size={20} />
               </button>
             </div>

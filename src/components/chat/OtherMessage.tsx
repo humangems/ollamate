@@ -3,6 +3,10 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Message } from '../../lib/types';
 import { useAppSelector } from '../../redux/store';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+import 'katex/dist/katex.min.css';
+
 
 export default function OtherMessage({ message }: { message: Message }) {
   const isStreaming = useAppSelector((state) => state.messages.isStreaming[message.id]);
@@ -16,7 +20,9 @@ export default function OtherMessage({ message }: { message: Message }) {
           </div>
         </div>
         <div className="prose flex-1">
-          <Markdown remarkPlugins={[remarkGfm]}>{message.content}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+            {message.content}
+          </Markdown>
           {isStreaming && <LoaderIcon className="animate-spin" />}
         </div>
       </div>
