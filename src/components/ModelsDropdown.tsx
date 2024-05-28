@@ -5,20 +5,26 @@ import { getAllModelsThunk, modelSelectors } from "../redux/slice/modelSlice";
 import { selectModel } from "../redux/slice/uiSlice";
 import prettyBytes from "pretty-bytes";
 
-export default function ModelsDropdown() {
+type ModelsDropdownProps = {
+  value: string,
+  onChange: (value: string) => void;
+}
 
+export default function ModelsDropdown({ value }: ModelsDropdownProps) {
   const dispatch = useAppDispatch();
-  const models = useAppSelector(state => modelSelectors.selectAll(state.models));
-  const selectedId = useAppSelector(state => state.ui.selectedModel);
-  const selectedModel = useAppSelector(state => modelSelectors.selectById(state.models, selectedId || ''));
+  const models = useAppSelector((state) => modelSelectors.selectAll(state.models));
+  const selectedId = useAppSelector((state) => state.ui.selectedModel);
+  const selectedModel = useAppSelector((state) =>
+    modelSelectors.selectById(state.models, selectedId || '')
+  );
 
   useEffect(() => {
     dispatch(getAllModelsThunk());
-  }, [])
+  }, []);
 
   const handleClick = (name: string) => {
     dispatch(selectModel(name));
-  }
+  };
 
   return (
     <DropdownMenu.Root>

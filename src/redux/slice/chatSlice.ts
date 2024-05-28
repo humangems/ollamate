@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import ollama from 'ollama/browser';
-import { getAllChats, updateChatTitle, upsertChat } from '../../lib/chatApi';
+import { getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
 import { Chat, Model } from '../../lib/types';
 import { streamEnd } from './messageSlice';
 
@@ -33,7 +33,9 @@ export const chatSlice = createSlice({
       })
       .addCase(generateTitleThunk.fulfilled, (state, action: PayloadAction<GeneratedTitle>) => {
         state.entities[action.payload.chatId].title = action.payload.title;
-      });
+      }).addCase(updateModelThunk.fulfilled, (state, action: PayloadAction<Chat>) => {
+        state.entities[action.payload.id].model = action.payload.model;
+      })
   }
 });
 
@@ -83,6 +85,20 @@ export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitle
       chatId: payload.chatId,
       title: response.message.content
     }
+  }
+);
+
+type UpdateModelPayload = {
+  chatId: string;
+  model: string;
+}
+
+export const updateModelThunk = createAsyncThunk<Chat, UpdateModelPayload>(
+  'chats/updateModel',
+  async (payload, _thunkAPI) => {
+
+    const chat = await updateChatModel(payload.chatId, payload.model);
+    return chat;
   }
 );
 

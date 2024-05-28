@@ -1,12 +1,12 @@
+import 'katex/dist/katex.min.css';
 import { LoaderIcon, RabbitIcon } from 'lucide-react';
 import Markdown from 'react-markdown';
+import rehypeKatex from 'rehype-katex';
+import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import { Message } from '../../lib/types';
 import { useAppSelector } from '../../redux/store';
-import rehypeKatex from 'rehype-katex';
-import remarkMath from 'remark-math';
-import rehypeMathjax from 'rehype-mathjax'
-import 'katex/dist/katex.min.css';
 
 
 export default function OtherMessage({ message }: { message: Message }) {
@@ -27,7 +27,10 @@ export default function OtherMessage({ message }: { message: Message }) {
           >
             {message.content}
           </Markdown>
-          <div>{message.model}</div>
+          <div className="flex items-center space-x-1 text-2 text-gray-11">
+            Model:
+            <div>{message.model}</div>
+          </div>
           {isStreaming && <LoaderIcon className="animate-spin" />}
         </div>
       </div>

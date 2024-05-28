@@ -5,7 +5,8 @@ import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
 import MessageInput from './MessageInput';
 import OtherMessage from './OtherMessage';
 import UserMessage from './UserMessage';
-import { generateTitleThunk } from '../../redux/slice/chatSlice';
+import { generateTitleThunk, updateModelThunk } from '../../redux/slice/chatSlice';
+import ModelSelect from '../ModelSelect';
 
 type ChatViewProps = {
   chat: Chat;
@@ -14,7 +15,6 @@ type ChatViewProps = {
 
 export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
-  const model = useAppSelector((state) => state.ui.selectedModel);
   const dispatch = useAppDispatch();
   const messagesRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +36,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
             content: m.content,
           };
         }),
-        model: 'llama3:latest',
+        model: chat.model,
       })
     );
   }, [chat.id]);
@@ -48,27 +48,35 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   }, [chat.id])
 
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    console.log(e.currentTarget.scrollTop);
+  const handleModelChange = (value: string) => {
+    dispatch(updateModelThunk({chatId: chat.id, model: value}));
   }
 
   return (
-    <div
-      className="h-[calc(100vh-72px)] overflow-y-auto relative"
-      ref={messagesRef}
-    >
-      <div className="pb-32 px-4 max-w-3xl mx-auto">
-        {messages.map((message: Message) => {
-          return message.role === 'user' ? (
-            <UserMessage message={message} key={message.id} />
-          ) : (
-            <OtherMessage message={message} key={message.id} />
-          );
-        })}
+    <div className="flex flex-col w-full">
+      <div className="px-6 bg-[#fff] h-14 flex items-center shrink-0 drag-region">
+        <div className='no-drag-region'>
+          <ModelSelect value={chat.model} onChange={handleModelChange} />
+        </div>
       </div>
 
-      <MessageInput chatId={chat.id} model={model} isNewChat={isNewChat} />
+      <div className="flex-1 w-full">
+        <div className=" h-[calc(100vh-140px)] overflow-y-auto" ref={messagesRef}>
+          <div className="pb-24 px-4 max-w-3xl mx-auto">
+            {messages.map((message: Message) => {
+              return message.role === 'user' ? (
+                <UserMessage message={message} key={message.id} />
+              ) : (
+                <OtherMessage message={message} key={message.id} />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="shrink-0 flex items-center py-4">
+        <MessageInput chatId={chat.id} model={chat.model} isNewChat={isNewChat} />
+      </div>
     </div>
   );
 }

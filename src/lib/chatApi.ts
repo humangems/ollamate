@@ -27,9 +27,17 @@ export async function upsertChat(chat: Chat) {
 export async function updateChatTitle(chatId: string, title: string) {
   const loaded = await collections.chats.findOne(chatId).exec();
 
+  if (loaded) {
+    const newObj = await loaded.patch({title});
+    return newObj.toJSON();
+  }
+}
+
+export async function updateChatModel(chatId: string, model: string) {
+  const loaded = await collections.chats.findOne(chatId).exec();
 
   if (loaded) {
-    await loaded.patch({title});
-    return loaded.toJSON();
+    const newObj = await loaded.patch({ model: model });
+    return newObj.toJSON();
   }
 }

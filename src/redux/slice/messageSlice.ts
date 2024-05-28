@@ -16,11 +16,6 @@ const messageAdapter = createEntityAdapter<Message>({
   sortComparer: (a, b) => a.created_at! - b.created_at!,
 });
 
-type NewUserMessageType = {
-  chatId: string;
-  content: string;
-};
-
 type StreamEventType = {
   chatId: string;
   messageId: string;
@@ -50,6 +45,7 @@ export const messageSlice = createSlice({
         id: action.payload.messageId,
         chat_id: action.payload.chatId,
         role: 'assistant',
+        model: action.payload.model,
         content: '',
         created_at: Date.now(),
         updated_at: Date.now(),
@@ -103,8 +99,6 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
 
     const server = await addMessage(userMessage);
 
-    console.log(server);
-
     thunkAPI.dispatch(newUserMessage(server));
 
     const state = thunkAPI.getState() as RootState;
@@ -145,6 +139,7 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
           chat_id: payload.chatId,
           role: part.message.role,
           content: part.message.content,
+          model: payload.model,
           eval_count: part.eval_count,
           eval_duration: part.eval_duration,
           done: part.done,
@@ -160,7 +155,6 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       chat.created_at = Date.now();
     }
     await upsertChat(chat);
-
 
     const newMsg: Message = {
       id: messageId,
