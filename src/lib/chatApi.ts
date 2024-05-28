@@ -23,3 +23,13 @@ export async function upsertChat(chat: Chat) {
     return loaded.toJSON();
   }
 }
+
+export async function updateChatTitle(chatId: string, title: string) {
+  const loaded = await collections.chats.findOne(chatId).exec();
+
+
+  if (loaded) {
+    await loaded.patch({title});
+    return loaded.toJSON();
+  }
+}

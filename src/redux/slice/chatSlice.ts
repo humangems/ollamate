@@ -1,9 +1,8 @@
 import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import { getAllChats } from '../../lib/chatApi';
+import ollama from 'ollama/browser';
+import { getAllChats, updateChatTitle, upsertChat } from '../../lib/chatApi';
 import { Chat, Model } from '../../lib/types';
 import { streamEnd } from './messageSlice';
-import { RootState } from '../store';
-import ollama from 'ollama/browser';
 
 
 const chatAdapter = createEntityAdapter<Chat>({
@@ -78,7 +77,7 @@ export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitle
       stream: false,
     });
 
-    console.log(response.message);
+    await updateChatTitle(payload.chatId, response.message.content);
 
     return {
       chatId: payload.chatId,

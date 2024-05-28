@@ -1,5 +1,6 @@
 import { LoaderIcon, RabbitIcon } from 'lucide-react';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Message } from '../../lib/types';
 import { useAppSelector } from '../../redux/store';
 
@@ -15,8 +16,8 @@ export default function OtherMessage({ message }: { message: Message }) {
           </div>
         </div>
         <div className="prose flex-1">
-          <Markdown>{message.content}</Markdown>
-          {isStreaming && <LoaderIcon className='animate-spin' />}
+          <Markdown remarkPlugins={[remarkGfm]}>{message.content}</Markdown>
+          {isStreaming && <LoaderIcon className="animate-spin" />}
         </div>
       </div>
     </div>

@@ -12,7 +12,9 @@ import { addMessage, getMessagesByChatId } from '../../lib/messageApi';
 import { Chat, Message } from '../../lib/types';
 import { RootState } from '../store';
 
-const messageAdapter = createEntityAdapter<Message>();
+const messageAdapter = createEntityAdapter<Message>({
+  sortComparer: (a, b) => a.created_at! - b.created_at!,
+});
 
 type NewUserMessageType = {
   chatId: string;
