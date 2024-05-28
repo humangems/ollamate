@@ -32,7 +32,7 @@ export default function ModelSelect({ value, onChange }: ModelSelectProps) {
   return (
     <Select.Root value={internalValue} onValueChange={handleChange} size="3">
       <Select.Trigger placeholder='Select a model' variant='ghost' color="gray"></Select.Trigger>
-      <Select.Content color='gray'>
+      <Select.Content color='gray' position="popper">
         {models.map((model) => (
           <Select.Item key={model.name} value={model.name}>{model.name}</Select.Item>
         ))}
