@@ -6,10 +6,11 @@ import {
   createSlice,
   nanoid,
 } from '@reduxjs/toolkit';
-import { Chat, Message } from '../../lib/types';
 import ollama from 'ollama/browser';
-import { RootState } from '../store';
 import { upsertChat } from '../../lib/chatApi';
+import { addMessage, getMessagesByChatId } from '../../lib/messageApi';
+import { Chat, Message } from '../../lib/types';
+import { RootState } from '../store';
 
 const messageAdapter = createEntityAdapter<Message>();
 
@@ -40,16 +41,7 @@ export const messageSlice = createSlice({
   reducers: {
     allModelsLoaded: messageAdapter.setAll,
 
-    newUserMessage: (state, action: PayloadAction<NewUserMessageType>) => {
-      messageAdapter.addOne(state, {
-        id: nanoid(),
-        chat_id: action.payload.chatId,
-        role: 'user',
-        content: action.payload.content,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      });
-    },
+    newUserMessage: messageAdapter.addOne,
 
     streamStart: (state, action: PayloadAction<StreamEventType>) => {
       messageAdapter.addOne(state, {
@@ -74,6 +66,11 @@ export const messageSlice = createSlice({
       state.isStreaming[action.payload.messageId] = false;
     },
   },
+  extraReducers(builder) {
+    builder.addCase(getMessagesThunk.fulfilled, (state, action) => {
+      messageAdapter.upsertMany(state, action.payload);
+    });
+  },
 });
 
 export type NewMessagePayloadType = {
@@ -83,12 +80,30 @@ export type NewMessagePayloadType = {
   isNewChat: boolean;
 };
 
+export const getMessagesThunk = createAsyncThunk<Message[], string>(
+  'messages/getMessages',
+  async(payload, thunkAPI) => {
+    const messages = await getMessagesByChatId(payload)
+    return messages;
+  }
+)
+
 export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
   'messages/llmChat',
   async (payload, thunkAPI) => {
-    const messageId = nanoid();
-    const systemMsg = { role: 'system', content: 'You are a helpful assistant.' };
-    thunkAPI.dispatch(newUserMessage({ chatId: payload.chatId, content: payload.content }));
+
+    const userMessage: Message = {
+      chat_id: payload.chatId,
+      role: "user",
+      content: payload.content,
+      id: nanoid(),
+    }
+
+    const server = await addMessage(userMessage);
+
+    console.log(server);
+
+    thunkAPI.dispatch(newUserMessage(server));
 
     const state = thunkAPI.getState() as RootState;
     const history = Object.values(state.messages.entities)
@@ -99,6 +114,9 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
           content: m.content,
         };
       });
+
+    const messageId = nanoid();
+    const systemMsg = { role: 'system', content: 'You are a helpful assistant.' };
 
     thunkAPI.dispatch(
       streamStart({
@@ -115,7 +133,10 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       stream: true,
     });
 
+    let content = '';
+
     for await (const part of response) {
+      content += part.message.content;
       thunkAPI.dispatch(
         streaming({
           id: messageId,
@@ -128,6 +149,7 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
         })
       );
     }
+
     const chat: Chat = {
       id: payload.chatId,
       model: payload.model,
@@ -136,8 +158,25 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       chat.created_at = Date.now();
     }
     await upsertChat(chat);
+
+
+    const newMsg: Message = {
+      id: messageId,
+      chat_id: payload.chatId,
+      content: content,
+      role: "assistant"
+    }
+
+    await addMessage(newMsg)
+
     thunkAPI.dispatch(
-      streamEnd({ chatId: payload.chatId, messageId, isNewChat: payload.isNewChat, model: payload.model, chatCreatedAt: chat.created_at })
+      streamEnd({
+        chatId: payload.chatId,
+        messageId,
+        isNewChat: payload.isNewChat,
+        model: payload.model,
+        chatCreatedAt: chat.created_at,
+      })
     );
   }
 );
@@ -147,7 +186,7 @@ export const messageSelectors = messageAdapter.getSelectors();
 export const selectMessagesByChatId = createSelector(
   (state: RootState) => messageSelectors.selectAll(state.messages),
   (_state, chatId: string) => chatId,
-  (messages, chatId) => {
+  (messages: Message[], chatId) => {
     return messages.filter((m: Message) => m.chat_id === chatId);
   }
 );

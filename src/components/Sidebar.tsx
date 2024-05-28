@@ -7,11 +7,13 @@ import SidebarActions from './SidebarActions';
 import { chatSelectors, getAllChatsThunk } from '../redux/slice/chatSlice';
 import ChatItem from './chat/ChatItem';
 import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
 export default function Sidebar() {
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
   const dispatch = useAppDispatch();
   const chats = useAppSelector(state => chatSelectors.selectAll(state.chats));
+  const { chatId } = useParams();
 
   useEffect(() => {
     dispatch(getAllChatsThunk());
@@ -42,7 +44,7 @@ export default function Sidebar() {
 
           <div className="flex-1">
             {chats.map((chat) => (
-              <ChatItem chat={chat} key={chat.id} />
+              <ChatItem chat={chat} key={chat.id} active={chat.id === chatId} />
             ))}
           </div>
 

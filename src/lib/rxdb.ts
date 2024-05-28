@@ -64,13 +64,56 @@ const chatSchema = {
   required: ['id', 'model', 'created_at', 'updated_at'],
 };
 
+const messageSchema = {
+  version: 0,
+  primaryKey: 'id',
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string',
+      maxLength: 21, // <- the primary key must have set maxLength
+    },
+    chat_id: {
+      type: 'string',
+    },
+    model: {
+      type: 'string',
+    },
+    provider: {
+      type: 'string',
+    },
+    role: {
+      type: 'string',
+    },
+    content: {
+      type: 'string',
+    },
+    images: {
+      type: 'array',
+      items: {
+        type: 'string'
+      }
+    },
+    created_at: {
+      type: 'number',
+    },
+    updated_at: {
+      type: 'number',
+    },
+  },
+  required: ['id', 'chat_id', 'role', 'content', 'created_at', 'updated_at'],
+};
+
 export const collections = await db.addCollections({
   notes: {
     schema: noteSchema,
   },
   chats: {
     schema: chatSchema,
-  }
+  },
+  messages: {
+    schema: messageSchema,
+  },
 });
 
 export async function getAllNotes() {
