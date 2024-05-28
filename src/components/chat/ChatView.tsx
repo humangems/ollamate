@@ -42,20 +42,21 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   }, [chat.id]);
 
   useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    }
-
-  }, [chat.id])
+    setTimeout(() => {
+      if (messagesRef.current) {
+        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      }
+    }, 50);
+  }, [chat.id]);
 
   const handleModelChange = (value: string) => {
-    dispatch(updateModelThunk({chatId: chat.id, model: value}));
-  }
+    dispatch(updateModelThunk({ chatId: chat.id, model: value }));
+  };
 
   return (
     <div className="flex flex-col w-full">
       <div className="px-6 bg-[#fff] h-14 flex items-center shrink-0 drag-region">
-        <div className='no-drag-region'>
+        <div className="no-drag-region">
           <ModelSelect value={chat.model} onChange={handleModelChange} />
         </div>
       </div>
