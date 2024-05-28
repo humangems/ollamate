@@ -39,7 +39,6 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
         //@ts-ignore
         payload['images'] = [values.image];
       }
-      console.log(payload);
       dispatch(llmChatThunk(payload));
       form.reset();
     } else {
@@ -87,20 +86,41 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
                 onClick={handleFileClick}
               >
                 <PlusIcon size={20} />
-                <input type="file" className="hidden" ref={inputFileRef} accept="image/*" onChange={handleFileChange}/>
+                <input
+                  type="file"
+                  className="hidden"
+                  ref={inputFileRef}
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
               </button>
             </div>
           </div>
-          <div className="flex-1 flex items-center">
-            <TextareaAutosize
-              maxRows={10}
-              minRows={1}
-              autoFocus
-              placeholder="Type a message..."
-              {...form.getInputProps('message')}
-              className="w-full p-2 bg-transparent outline-none resize-none"
-              onKeyDown={handleKeyUp}
-            />
+          <div className="flex-1">
+            <div className="w-full">
+              {form.values.image && (
+                <div className="w-full pt-2 pb-1 pl-2">
+                  <div className="max-h-12  ">
+                    <img
+                      src={`data:image/jpeg;base64,${form.values.image}`}
+                      alt="image"
+                      className="rounded-1 max-h-12"
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center">
+                <TextareaAutosize
+                  maxRows={10}
+                  minRows={1}
+                  autoFocus
+                  placeholder="Type a message..."
+                  {...form.getInputProps('message')}
+                  className="w-full p-2 bg-transparent outline-none resize-none"
+                  onKeyDown={handleKeyUp}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="shrink-0 size-8">

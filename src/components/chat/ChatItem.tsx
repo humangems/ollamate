@@ -11,11 +11,11 @@ type ChatItemProps = {
 export default function ChatItem({ chat, active }: ChatItemProps) {
   const title = chat.title || dayjs(chat.created_at).format('[New Chat] MMM D HH:mm');
   return (
-    <Link to={`/chat/${chat.id}`}>
+    <Link to={`/chat/${chat.id}`} className='block cursor-default'>
       <div
         title={title}
         className={clsx(
-          'flex items-center whitespace-nowrap text-2 h-8 cursor-pointer px-2 rounded-2 hover:bg-gray-4 text-ellipsis overflow-hidden',
+          'flex items-center whitespace-nowrap text-2 h-8 px-2 rounded-2 hover:bg-gray-4 text-ellipsis overflow-hidden',
           active && 'bg-gray-4'
         )}
       >

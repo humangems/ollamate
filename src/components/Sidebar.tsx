@@ -37,7 +37,7 @@ export default function Sidebar() {
 
           <div className="flex-1 mt-4">
             <div className='text-1 px-2 py-1 shrink-0'>Conversations</div>
-            <div className='overflow-y-auto h-[calc(100vh-146px)]'>
+            <div className='overflow-y-auto h-[calc(100vh-146px)] space-y-[1px]'>
               {chats.map((chat) => (
                 <ChatItem chat={chat} key={chat.id} active={chat.id === chatId} />
               ))}
