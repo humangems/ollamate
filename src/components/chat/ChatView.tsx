@@ -55,8 +55,6 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   };
 
-  console.log(internalModel);
-
   return (
     <div className="flex flex-col w-full">
       <div className=" bg-[#fff] h-14 flex items-center shrink-0 drag-region">

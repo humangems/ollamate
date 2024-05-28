@@ -7,6 +7,7 @@ import { useAppDispatch } from '../../redux/store';
 
 type FormValues = {
   message: string;
+  image?: string;
 };
 
 type MessageInputProps = {
@@ -18,15 +19,28 @@ type MessageInputProps = {
 export default function MessageInput({ chatId, model,  isNewChat = false }: MessageInputProps) {
   const dispatch = useAppDispatch();
   const formRef = useRef<HTMLFormElement>(null);
+  const inputFileRef = useRef<HTMLInputElement>(null);
   const form = useForm<FormValues>({
     initialValues: {
       message: '',
+      image: undefined,
     },
   });
 
   const handleSubmit = async (values: FormValues) => {
     if (model) {
-      dispatch(llmChatThunk({ chatId: chatId, content: values.message, model, isNewChat }));
+      let payload = {
+        chatId: chatId,
+        content: values.message,
+        model,
+        isNewChat,
+      };
+      if (values.image) {
+        //@ts-ignore
+        payload['images'] = [values.image];
+      }
+      console.log(payload);
+      dispatch(llmChatThunk(payload));
       form.reset();
     } else {
       alert('Please select a model first');
@@ -40,6 +54,27 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
     }
   };
 
+  const handleFileClick = () => {
+    inputFileRef.current?.click();
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    if (e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    var reader = new FileReader();
+
+    reader.onload = function () {
+      const result = reader.result as string;
+      const base64String = result.replace('data:', '').replace(/^.+,/, '');
+      form.setFieldValue('image', base64String);
+    };
+
+    reader.readAsDataURL(file);
+
+  }
+
   return (
     <div className="max-w-3xl w-full px-4 mx-auto">
       <form onSubmit={form.onSubmit(handleSubmit)} ref={formRef}>
@@ -49,8 +84,10 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
               <button
                 className="size-8 rounded-full flex items-center justify-center hover:bg-gray-4"
                 type="button"
+                onClick={handleFileClick}
               >
                 <PlusIcon size={20} />
+                <input type="file" className="hidden" ref={inputFileRef} accept="image/*" onChange={handleFileChange}/>
               </button>
             </div>
           </div>

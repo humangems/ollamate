@@ -40,6 +40,7 @@ export type Message = {
   eval_count?: number;
   eval_duration?: number;
   done?: boolean;
+  images?: string[];
 };
 
 export type UserMessage = {

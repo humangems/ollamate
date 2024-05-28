@@ -75,6 +75,7 @@ export type NewMessagePayloadType = {
   chatId: string;
   content: string;
   model: string;
+  images?: string[];
   isNewChat: boolean;
 };
 
@@ -94,6 +95,7 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       chat_id: payload.chatId,
       role: "user",
       content: payload.content,
+      images: payload.images,
       id: nanoid(),
     }
 
@@ -108,6 +110,7 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
         return {
           role: m.role,
           content: m.content,
+          images: m.images
         };
       });
 
