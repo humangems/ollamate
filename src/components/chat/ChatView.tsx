@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Chat, Message } from '../../lib/types';
 import { getMessagesThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
@@ -16,6 +16,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
   const model = useAppSelector((state) => state.ui.selectedModel);
   const dispatch = useAppDispatch();
+  const messagesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     dispatch(getMessagesThunk(chat.id));
@@ -40,9 +41,24 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
     );
   }, [chat.id]);
 
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+
+  }, [chat.id])
+
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    console.log(e.currentTarget.scrollTop);
+  }
+
   return (
-    <div>
-      <div className="mt-4 pb-32">
+    <div
+      className="h-[calc(100vh-72px)] overflow-y-auto relative"
+      ref={messagesRef}
+    >
+      <div className="pb-32 px-4 max-w-3xl mx-auto">
         {messages.map((message: Message) => {
           return message.role === 'user' ? (
             <UserMessage message={message} key={message.id} />

@@ -23,7 +23,7 @@ export default function NotePage() {
   if (!chat) return null;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="">
       <ChatView chat={chat} isNewChat={false} />
     </div>
   );
