@@ -127,9 +127,10 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
             <div className="absolute bottom-2">
               <button
                 type="submit"
-                className="rounded-full size-8 bg-grayA-3 hover:bg-gray-4 active:bg-gray-5 flex items-center justify-center"
+                disabled
+                className="rounded-full size-8 bg-grayA-11 hover:bg-gray-4 text-[#fff] active:bg-gray-5 flex items-center justify-center"
               >
-                <ArrowUpIcon size={20} />
+                <ArrowUpIcon size={20} className="" />
               </button>
             </div>
           </div>

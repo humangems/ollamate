@@ -2,8 +2,17 @@ import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } fro
 import ollama from 'ollama/browser';
 import { getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
 import { Chat, Model } from '../../lib/types';
-import { streamEnd } from './messageSlice';
+import { llmChatThunk, streamEnd, streamStart } from './messageSlice';
 
+type InitialState = {
+  newChatId: string | null;
+  isStreaming: Record<string, boolean>;
+};
+
+const initialState : InitialState = {
+  newChatId: null,
+  isStreaming: {},
+}
 
 const chatAdapter = createEntityAdapter<Chat>({
   sortComparer: (a, b) => b.created_at! - a.created_at!,
@@ -11,9 +20,7 @@ const chatAdapter = createEntityAdapter<Chat>({
 
 export const chatSlice = createSlice({
   name: 'chats',
-  initialState: chatAdapter.getInitialState({
-    newChatId: null as string | null,
-  }),
+  initialState: chatAdapter.getInitialState(initialState),
   reducers: {
     allChatsLoaded: chatAdapter.setAll,
   },
@@ -33,8 +40,14 @@ export const chatSlice = createSlice({
       })
       .addCase(generateTitleThunk.fulfilled, (state, action: PayloadAction<GeneratedTitle>) => {
         state.entities[action.payload.chatId].title = action.payload.title;
-      }).addCase(updateModelThunk.fulfilled, (state, action: PayloadAction<Chat>) => {
+      })
+      .addCase(updateModelThunk.fulfilled, (state, action: PayloadAction<Chat>) => {
         state.entities[action.payload.id].model = action.payload.model;
+      })
+      .addCase(llmChatThunk.pending, (state, action) => {
+        state.isStreaming[action.meta.arg.chatId] = true;
+      }).addCase(llmChatThunk.fulfilled, (state, action) => {
+        state.isStreaming[action.meta.arg.chatId] = false;
       })
   }
 });

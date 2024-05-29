@@ -12,6 +12,8 @@ type MessageHistoryProps = {
 export default function MessageHistory({ chatId }: MessageHistoryProps) {
   const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chatId));
   const messagesRef = useRef<HTMLDivElement>(null);
+  const isStreaming = useAppSelector((state: RootState) => state.chats.isStreaming[chatId]);
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setTimeout(() => {
@@ -20,6 +22,23 @@ export default function MessageHistory({ chatId }: MessageHistoryProps) {
       }
     }, 50);
   }, [chatId]);
+
+  useEffect(() => {
+    if (isStreaming) {
+      if (intervalIdRef.current) clearInterval(intervalIdRef.current);
+      intervalIdRef.current = setInterval(() => {
+        if (messagesRef.current) {
+          messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+      }
+    }
+  }, [isStreaming])
 
   return (
     <div className=" h-[calc(100vh-190px)] overflow-y-auto" ref={messagesRef}>
