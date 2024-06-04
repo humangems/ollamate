@@ -3,7 +3,6 @@ import { LoaderIcon } from 'lucide-react';
 import Markdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import rehypeMathjax from 'rehype-mathjax';
-import rehypeMermaid from 'rehype-mermaid';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Message } from '../../lib/types';
@@ -27,7 +26,7 @@ export default function OtherMessage({ message }: { message: Message }) {
         <div className="prose flex-1">
           <Markdown
             remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex, rehypeMathjax, rehypeMermaid]}
+            rehypePlugins={[rehypeKatex, rehypeMathjax]}
           >
             {message.content}
           </Markdown>
