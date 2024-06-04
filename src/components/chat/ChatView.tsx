@@ -56,7 +56,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   };
 
   return (
-    <div className="flex flex-col relative">
+    <div className="flex flex-col relative h-full">
       <div className=" bg-[#fff] h-14 flex items-center shrink-0 drag-region">
 
         <div className={clsx("no-drag-region px-6 flex items-center", !sidebarOpen && "pl-40")}>
@@ -64,11 +64,11 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
         </div>
       </div>
 
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full h-full">
         <MessageHistory chatId={chat.id} />
       </div>
 
-      <div className="shrink-0 flex items-center py-4">
+      <div className="absolute bottom-6 left-0 right-0">
         <MessageInput chatId={chat.id} model={internalModel} isNewChat={isNewChat} />
       </div>
     </div>

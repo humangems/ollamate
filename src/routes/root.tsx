@@ -14,7 +14,7 @@ export default function RootPage() {
       <div className="h-screen relative">
         <div className="flex z-0 w-full h-full">
           <Sidebar />
-          <div className="flex-1 z-0">
+          <div className="flex-1 z-0 h-full">
             <Outlet />
           </div>
         </div>

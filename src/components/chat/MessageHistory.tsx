@@ -30,7 +30,7 @@ export default function MessageHistory({ chatId }: MessageHistoryProps) {
         if (messagesRef.current) {
           messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
         }
-      }, 500);
+      }, 200);
     }
 
     return () => {
@@ -41,7 +41,7 @@ export default function MessageHistory({ chatId }: MessageHistoryProps) {
   }, [isStreaming])
 
   return (
-    <div className=" h-[calc(100vh-190px)] overflow-y-auto" ref={messagesRef}>
+    <div className=" h-[calc(100vh-60px)] overflow-y-auto" ref={messagesRef}>
       <div className="pb-24 px-4 max-w-3xl mx-auto">
         {messages.map((message: Message) => {
           return message.role === 'user' ? (
