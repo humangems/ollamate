@@ -1,14 +1,13 @@
 import { IconButton } from '@radix-ui/themes';
+import clsx from 'clsx';
 import { PanelLeftIcon, SquarePenIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toggleSidebar } from '../redux/slice/uiSlice';
-import { useAppDispatch, useAppSelector } from '../redux/store';
-import clsx from 'clsx';
+import { useAppDispatch } from '../redux/store';
 
 export default function SidebarActions() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const isFullscreen = useAppSelector(state => state.ui.isFullscreen);
 
   const handleSidebarClick = () => {
     dispatch(toggleSidebar());
@@ -19,7 +18,7 @@ export default function SidebarActions() {
   };
 
   return (
-    <div className={clsx('h-full flex items-center gap-4', isFullscreen ? 'pl-4' : 'pl-[88px]')}>
+    <div className={clsx('h-full flex items-center gap-4')}>
       <IconButton
         variant="ghost"
         className="no-drag-region"

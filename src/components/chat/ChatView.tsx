@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
+import { useEffect, useState } from 'react';
+import { Chat } from '../../lib/types';
 import { generateTitleThunk, updateModelThunk } from '../../redux/slice/chatSlice';
 import { getMessagesThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
 import ModelSelect from '../ModelSelect';
-import SidebarActions from '../SidebarActions';
 import MessageHistory from './MessageHistory';
 import MessageInput from './MessageInput';
-import { Chat } from '../../lib/types';
 
 type ChatViewProps = {
   chat: Chat;
@@ -56,14 +56,10 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   };
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col relative">
       <div className=" bg-[#fff] h-14 flex items-center shrink-0 drag-region">
-        {!sidebarOpen && (
-          <div className="mr-4">
-            <SidebarActions />
-          </div>
-        )}
-        <div className="no-drag-region px-6">
+
+        <div className={clsx("no-drag-region px-6 flex items-center", !sidebarOpen && "pl-40")}>
           <ModelSelect value={internalModel} onChange={handleModelChange} />
         </div>
       </div>
