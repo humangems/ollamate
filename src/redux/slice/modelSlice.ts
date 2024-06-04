@@ -1,5 +1,5 @@
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import { getModels } from '../../lib/modelApi';
+import ollama from 'ollama/browser';
 import { Model } from '../../lib/types';
 
 const modelAdapter = createEntityAdapter<Model, string>({
@@ -17,12 +17,20 @@ export const modelSlice = createSlice({
 export const getAllModelsThunk = createAsyncThunk<Model[]>(
   'models/getAllModels',
   async (_payload, thunkAPI) => {
-    const response = await getModels();
-    thunkAPI.dispatch(allModelsLoaded(response));
-    return response;
+    let response;
+    try {
+      response = await ollama.list();
+    } catch (error) {
+      alert(`Failed to fetch models\n\n${error}`);
+    }
+
+    if (!response) return [];
+
+    const models  = response.models;
+    thunkAPI.dispatch(allModelsLoaded(models));
+    return models;
   }
 );
-
 
 export const modelSelectors = modelAdapter.getSelectors();
 

@@ -15,10 +15,9 @@ export type ImportedNote = {
 
 export type Model = {
   name: string;
-  model: string;
   size: number;
   digest: string;
-  modified_at: string; //2023-11-04T14:56:49.277302595-07:00
+  modified_at: Date; //2023-11-04T14:56:49.277302595-07:00
 };
 
 export type Chat = {

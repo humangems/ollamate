@@ -2,7 +2,7 @@ import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } fro
 import ollama from 'ollama/browser';
 import { getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
 import { Chat, Model } from '../../lib/types';
-import { llmChatThunk, streamEnd, streamStart } from './messageSlice';
+import { llmChatThunk, streamEnd } from './messageSlice';
 
 type InitialState = {
   newChatId: string | null;

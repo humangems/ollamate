@@ -81,7 +81,7 @@ export type NewMessagePayloadType = {
 
 export const getMessagesThunk = createAsyncThunk<Message[], string>(
   'messages/getMessages',
-  async(payload, thunkAPI) => {
+  async(payload, _thunkAPI) => {
     const messages = await getMessagesByChatId(payload)
     return messages;
   }
@@ -126,11 +126,20 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       })
     );
 
-    const response = await ollama.chat({
-      model: payload.model,
-      messages: [systemMsg, ...history],
-      stream: true,
-    });
+    let response;
+
+    try {
+      response = await ollama.chat({
+        model: payload.model,
+        messages: [systemMsg, ...history],
+        stream: true,
+      });
+    } catch(e) {
+      const error = e as Error;
+      alert(`Error occurred while chatting with the model: ${payload.model}\n\n${error.message}`);
+    }
+
+    if (!response) return;
 
     let content = '';
 
