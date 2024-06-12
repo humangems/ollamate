@@ -57,7 +57,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   return (
     <div className="flex flex-col relative h-full">
-      <div className=" bg-[#fff] h-14 flex items-center shrink-0 drag-region">
+      <div className=" bg-[#fff] h-[52px] flex items-center shrink-0 drag-region">
 
         <div className={clsx("no-drag-region px-6 flex items-center", !sidebarOpen && "pl-40")}>
           <ModelSelect value={internalModel} onChange={handleModelChange} />

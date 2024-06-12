@@ -15,8 +15,8 @@ export default function ChatItem({ chat, active }: ChatItemProps) {
       <div
         title={title}
         className={clsx(
-          'flex items-center whitespace-nowrap text-2 h-8 px-2 rounded-2 hover:bg-gray-4 text-ellipsis overflow-hidden',
-          active && 'bg-gray-4'
+          'flex items-center whitespace-nowrap text-2 h-8 px-2 rounded-2 hover:bg-gray-6 text-ellipsis overflow-hidden',
+          active && 'bg-gray-6'
         )}
       >
         {title}

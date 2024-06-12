@@ -25,7 +25,7 @@ export default function Sidebar() {
     <motion.div
       initial={{ width: 260 }}
       animate={{ width: sidebarOpen ? 260 : 0 }}
-      className="bg-gray-2 shrink-0 overflow-hidden z-10"
+      className="bg-gray-3 shrink-0 overflow-hidden z-10"
     >
       <div className="flex flex-col w-[260px]">
         <div className="h-14 drag-region shrink-0"></div>
