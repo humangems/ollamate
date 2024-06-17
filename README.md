@@ -4,6 +4,9 @@
 
 **Ollamate: Ollama Desktop Client for Everyday Use**
 
+**Download (Mac only)**: [Apple Silicon](https://github.com/humangems/ollamate/releases/download/v0.0.1/Ollamate-0.0.1-arm64.dmg) | [Intel](https://github.com/humangems/ollamate/releases/download/v0.0.1/Ollamate-0.0.1-x64.dmg)
+
+
 Ollamate is an open-source ChatGPT-like desktop client built around Ollama, providing similar features but entirely local. It leverages local LLM models like Llama 3, Qwen2, Phi3, etc. via Ollama, ensuring privacy and offline capability.
 
 ![](./public/demo.png)
