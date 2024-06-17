@@ -12,6 +12,7 @@ module.exports = {
       teamId: process.env.APPLE_TEAM_ID,
     },
     icon: 'public/icon',
+    name: "Ollamate"
   },
   rebuildConfig: {},
   makers: [
@@ -20,9 +21,13 @@ module.exports = {
       config: {},
     },
     {
-      name: '@electron-forge/maker-zip',
+      name: '@electron-forge/maker-dmg',
       platforms: ['darwin'],
     },
+    // {
+    //   name: '@electron-forge/maker-zip',
+    //   platforms: ['darwin'],
+    // },
     {
       name: '@electron-forge/maker-deb',
       config: {},
@@ -38,11 +43,11 @@ module.exports = {
       config: {
         repository: {
           owner: 'humangems',
-          name: 'ollamate'
+          name: 'ollamate',
         },
-        prerelease: true
-      }
-    }
+        prerelease: true,
+      },
+    },
   ],
   plugins: [
     {

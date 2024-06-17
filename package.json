@@ -11,17 +11,20 @@
     "preview": "vite preview",
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make-x64": "electron-forge make --arch=x64",
+    "make-arm64": "electron-forge make --arch=arm64",
     "publish": "electron-forge publish"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "devDependencies": {
     "@mantine/form": "^7.9.2",
     "@mantine/hooks": "^7.9.2",
     "@radix-ui/themes": "^3.0.5",
     "@reduxjs/toolkit": "^2.2.5",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.11",
-    "electron-squirrel-startup": "^1.0.1",
     "framer-motion": "^11.2.4",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
@@ -41,11 +44,10 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "rxdb": "^15.21.0",
-    "rxjs": "^7.8.1"
-  },
-  "devDependencies": {
+    "rxjs": "^7.8.1",
     "@electron-forge/cli": "^7.4.0",
     "@electron-forge/maker-deb": "^7.4.0",
+    "@electron-forge/maker-dmg": "^7.4.0",
     "@electron-forge/maker-rpm": "^7.4.0",
     "@electron-forge/maker-squirrel": "^7.4.0",
     "@electron-forge/maker-zip": "^7.4.0",

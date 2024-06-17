@@ -9,7 +9,7 @@ jobs:
     # Platforms to build on/for
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-13]
 
     steps:
       - name: Check out Git repository
@@ -45,8 +45,11 @@ jobs:
       - name: Build the package
         run: yarn install && yarn build
 
+      - name: make the package
+        run: yarn make-arm64 && yarn make-x64
+
       - name: Publish to github releases
-        run: yarn run publish
+        run: yarn make-arm64 && yarn make-x64 && yarn run publish
         env:
           # macOS notarization API key
           API_KEY_ID: ${{ secrets.apple_api_key_id }}
