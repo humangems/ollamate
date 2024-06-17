@@ -28,12 +28,19 @@ jobs:
       #     # Log in to Snap Store
       #     snapcraft_token: ${{ secrets.snapcraft_token }}
 
-      - name: Prepare for app notarization (macOS)
+      # - name: Prepare for app notarization (macOS)
+      #   if: startsWith(matrix.os, 'macos')
+      #   # Import Apple API key for app notarization on macOS
+      #   run: |
+      #     mkdir -p ~/private_keys/
+      #     echo '${{ secrets.apple_api_key }}' > ~/private_keys/AuthKey_${{ secrets.apple_api_key_id }}.p8
+
+      - name: Signing By Apple Developer ID
         if: startsWith(matrix.os, 'macos')
-        # Import Apple API key for app notarization on macOS
-        run: |
-          mkdir -p ~/private_keys/
-          echo '${{ secrets.apple_api_key }}' > ~/private_keys/AuthKey_${{ secrets.apple_api_key_id }}.p8
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATES_P12 }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATES_P12_PASSWORD }}
 
       - name: Build the package
         run: yarn install && yarn build
