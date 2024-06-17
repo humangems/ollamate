@@ -7,10 +7,6 @@ module.exports = {
     osxSign: {},
     osxNotarize: {
       tool: 'notarytool',
-      // appleApiKey: process.env.APPLE_API_KEY,
-      // appleApiKeyId: process.env.APPLE_API_KEY_ID,
-      // appleApiIssuer: process.env.APPLE_API_ISSUER,
-      // NOTE: it cannot load from dotenv
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_PASSWORD,
       teamId: process.env.APPLE_TEAM_ID,
@@ -35,6 +31,18 @@ module.exports = {
       name: '@electron-forge/maker-rpm',
       config: {},
     },
+  ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'humangems',
+          name: 'ollamate'
+        },
+        prerelease: true
+      }
+    }
   ],
   plugins: [
     {

@@ -37,7 +37,7 @@ jobs:
 
       - name: Signing By Apple Developer ID
         if: startsWith(matrix.os, 'macos')
-        uses: apple-actions/import-codesign-certs@v1
+        uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATES_P12 }}
           p12-password: ${{ secrets.APPLE_CERTIFICATES_P12_PASSWORD }}
