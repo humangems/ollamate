@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
   },
   "dependencies": {
     "@mantine/form": "^7.9.2",
@@ -50,6 +51,7 @@
     "@electron-forge/maker-zip": "^7.4.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
     "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron-forge/publisher-github": "^7.4.0",
     "@electron/fuses": "^1.8.0",
     "@tailwindcss/typography": "^0.5.13",
     "@types/lodash": "^4.17.4",

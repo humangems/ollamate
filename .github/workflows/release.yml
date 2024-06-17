@@ -45,8 +45,8 @@ jobs:
       - name: Build the package
         run: yarn install && yarn build
 
-      - name: Make the app
-        run: yarn make
+      - name: Publish to github releases
+        run: yarn run publish
         env:
           # macOS notarization API key
           API_KEY_ID: ${{ secrets.apple_api_key_id }}
