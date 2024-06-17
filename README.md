@@ -1,8 +1,12 @@
 # Ollamate
 
+![](./public/512x512@2x.png)
+
 **Ollamate: Ollama Desktop Client for Everyday Use**
 
 Ollamate is an open-source ChatGPT-like desktop client built around Ollama, providing similar features but entirely local. It leverages local LLM models like Llama 3, Qwen2, Phi3, etc. via Ollama, ensuring privacy and offline capability.
+
+![](./public/demo.png)
 
 ## Features
 
