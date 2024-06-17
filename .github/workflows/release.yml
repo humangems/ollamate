@@ -36,7 +36,7 @@ jobs:
           echo '${{ secrets.apple_api_key }}' > ~/private_keys/AuthKey_${{ secrets.apple_api_key_id }}.p8
 
       - name: Build the package
-      - run: yarn build
+        run: yarn build
 
       - name: Make the app
         run: yarn make        
