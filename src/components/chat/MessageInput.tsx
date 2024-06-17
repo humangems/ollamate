@@ -28,6 +28,8 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
   });
 
   const handleSubmit = async (values: FormValues) => {
+    if (values.message.trim() === '') return;
+
     if (model) {
       let payload = {
         chatId: chatId,
@@ -127,8 +129,8 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
             <div className="absolute bottom-2">
               <button
                 type="submit"
-                disabled
-                className="rounded-full size-8 bg-grayA-11 hover:bg-gray-4 text-[#fff] active:bg-gray-5 flex items-center justify-center"
+                disabled={!form.values.message}
+                className="rounded-full size-8 bg-grayA-11 hover:bg-gray-4 text-[#fff] active:bg-gray-5 flex items-center justify-center disabled:bg-grayA-3"
               >
                 <ArrowUpIcon size={20} className="" />
               </button>
