@@ -13,7 +13,8 @@
     "package": "electron-forge package",
     "make-x64": "electron-forge make --arch=x64",
     "make-arm64": "electron-forge make --arch=arm64",
-    "publish": "electron-forge publish"
+    "publish-x64": "electron-forge publish --arch=x64",
+    "publish-arm64": "electron-forge publish --arch=arm64"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1"

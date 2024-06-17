@@ -45,8 +45,8 @@ jobs:
       - name: Build the package
         run: yarn install && yarn build
 
-      - name: Publish to github releases
-        run: yarn run publish
+      - name: Publish to github releases (x64)
+        run: yarn run publish-x64
         env:
           API_KEY_ID: ${{ secrets.apple_api_key_id }}
           API_KEY_ISSUER_ID: ${{ secrets.apple_api_key_issuer_id }}
@@ -54,3 +54,14 @@ jobs:
           APPLE_PASSWORD: ${{secrets.apple_password}}
           APPLE_TEAM_ID: ${{secrets.apple_team_id}}
           GITHUB_TOKEN: ${{secrets.gh_token}}
+
+      - name: Publish to github releases (arm64)
+        run: yarn run publish-arm64
+        env:
+          API_KEY_ID: ${{ secrets.apple_api_key_id }}
+          API_KEY_ISSUER_ID: ${{ secrets.apple_api_key_issuer_id }}
+          APPLE_ID: ${{secrets.apple_id}}
+          APPLE_PASSWORD: ${{secrets.apple_password}}
+          APPLE_TEAM_ID: ${{secrets.apple_team_id}}
+          GITHUB_TOKEN: ${{secrets.gh_token}}
+
