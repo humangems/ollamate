@@ -93,7 +93,7 @@ export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitle
 
     const instruction = {
       role: "user",
-      content: "Generate a title for the conversation, no more than 15 words. return just the title, no quotes. try match the target language."
+      content: "Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language."
     }
 
     const response = await ollama.chat({
