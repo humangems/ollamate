@@ -10,7 +10,7 @@ import SidebarActions from '../components/SidebarActions';
 export default function RootPage() {
   const isFullscreen = useAppSelector((state) => state.ui.isFullscreen);
   return (
-    <Theme accentColor="blue" grayColor='gray'>
+    <Theme accentColor="gray" grayColor='gray'>
       <div className="h-screen relative">
         <div className="flex z-0 w-full h-full">
           <Sidebar />

@@ -41,3 +41,20 @@ export async function updateChatModel(chatId: string, model: string) {
     return newObj.toJSON();
   }
 }
+
+export async function deleteChat(chatId: string) {
+  const loaded = await collections.chats.findOne(chatId).exec();
+  const relatedMessages = collections.messages.find({
+    selector: {
+      chat_id: {
+        $eq: chatId,
+      },
+    },
+  });
+
+  if (loaded) {
+    await loaded.remove();
+    await relatedMessages.remove();
+    return chatId;
+  }
+}

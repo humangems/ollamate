@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import ollama from 'ollama/browser';
-import { getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
+import { deleteChat, getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
 import { Chat, Model } from '../../lib/types';
 import { llmChatThunk, streamEnd } from './messageSlice';
 
@@ -23,6 +23,7 @@ export const chatSlice = createSlice({
   initialState: chatAdapter.getInitialState(initialState),
   reducers: {
     allChatsLoaded: chatAdapter.setAll,
+    chatRemoved: chatAdapter.removeOne,
   },
 
   extraReducers: (builder) => {
@@ -60,6 +61,15 @@ export const getAllChatsThunk = createAsyncThunk<Model[]>(
     return response;
   }
 );
+
+export const deleteChatThunk = createAsyncThunk<void, string>(
+  'chats/deleteChat',
+  async (chatId, thunkAPI) => {
+    await deleteChat(chatId);
+    thunkAPI.dispatch(chatRemoved(chatId));
+  }
+);
+
 
 type SimpleChatMessage = {
   role: string;
@@ -119,6 +129,6 @@ export const updateModelThunk = createAsyncThunk<Chat, UpdateModelPayload>(
 export const chatSelectors = chatAdapter.getSelectors();
 
 // Action creators are generated for each case reducer function
-export const { allChatsLoaded } = chatSlice.actions;
+export const { allChatsLoaded, chatRemoved } = chatSlice.actions;
 
 export default chatSlice.reducer;
