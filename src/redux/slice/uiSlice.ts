@@ -6,6 +6,7 @@ export interface UIState {
   isFullscreen: boolean;
   settingOpen: boolean;
   selectedModel: string | null;
+  renamingChatId: string | null;
 }
 
 const initialState: UIState = {
@@ -14,6 +15,7 @@ const initialState: UIState = {
   isFullscreen: false,
   settingOpen: false,
   selectedModel: null,
+  renamingChatId: null
 };
 
 export const uiSlice = createSlice({
@@ -41,13 +43,22 @@ export const uiSlice = createSlice({
     hideSetting: (state) => {
       state.settingOpen = false;
     },
+
+    startRenaming: (state, action: PayloadAction<string>) => {
+      state.renamingChatId = action.payload;
+    },
+
+    stopRenaming: (state) => {
+      state.renamingChatId = null;
+    },
+
     selectModel: (state, action: PayloadAction<string>) => {
       state.selectedModel = action.payload;
-    }
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { startEditing, stopEditing, toggleSidebar, enterFullscreen, leaveFullscreen, showSetting, hideSetting, selectModel } = uiSlice.actions;
+export const { startEditing, stopEditing, toggleSidebar, enterFullscreen, leaveFullscreen, showSetting, hideSetting, selectModel, startRenaming, stopRenaming } = uiSlice.actions;
 
 export default uiSlice.reducer;

@@ -24,6 +24,7 @@ export const chatSlice = createSlice({
   reducers: {
     allChatsLoaded: chatAdapter.setAll,
     chatRemoved: chatAdapter.removeOne,
+    chatUpdated: chatAdapter.updateOne,
   },
 
   extraReducers: (builder) => {
@@ -67,6 +68,19 @@ export const deleteChatThunk = createAsyncThunk<void, string>(
   async (chatId, thunkAPI) => {
     await deleteChat(chatId);
     thunkAPI.dispatch(chatRemoved(chatId));
+  }
+);
+
+type UpdateChatTitlePayload = {
+  chatId: string;
+  title: string;
+}
+
+export const updateChatTitleThunk = createAsyncThunk<void, UpdateChatTitlePayload>(
+  'chats/updateChatTitle',
+  async (payload, thunkAPI) => {
+    await updateChatTitle(payload.chatId, payload.title);
+    thunkAPI.dispatch(chatUpdated({ id: payload.chatId, changes: { title: payload.title } }));
   }
 );
 
@@ -129,6 +143,6 @@ export const updateModelThunk = createAsyncThunk<Chat, UpdateModelPayload>(
 export const chatSelectors = chatAdapter.getSelectors();
 
 // Action creators are generated for each case reducer function
-export const { allChatsLoaded, chatRemoved } = chatSlice.actions;
+export const { allChatsLoaded, chatRemoved, chatUpdated } = chatSlice.actions;
 
 export default chatSlice.reducer;

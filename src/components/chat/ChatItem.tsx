@@ -5,6 +5,7 @@ import { Chat } from '../../lib/types';
 import { ContextMenu } from '@radix-ui/themes';
 import { useAppDispatch } from '../../redux/store';
 import { deleteChatThunk } from '../../redux/slice/chatSlice';
+import { startRenaming } from '../../redux/slice/uiSlice';
 
 type ChatItemProps = {
   chat: Chat;
@@ -19,6 +20,9 @@ export default function ChatItem({ chat, active }: ChatItemProps) {
     dispatch(deleteChatThunk(chat.id)).then(() => {
       navigate('/');
     })
+  }
+  const handleRename = () => {
+    dispatch(startRenaming(chat.id));
   }
   return (
     <ContextMenu.Root>
@@ -37,7 +41,7 @@ export default function ChatItem({ chat, active }: ChatItemProps) {
         </div>
       </ContextMenu.Trigger>
       <ContextMenu.Content>
-        <ContextMenu.Item>Edit</ContextMenu.Item>
+        <ContextMenu.Item onClick={handleRename}>Rename title</ContextMenu.Item>
         <ContextMenu.Separator />
         <ContextMenu.Item color="red" onClick={handleDelete}>
           Delete

@@ -6,11 +6,12 @@ import SettingDialog from '../components/setting/SettingDialog';
 import { useAppSelector } from '../redux/store';
 import clsx from 'clsx';
 import SidebarActions from '../components/SidebarActions';
+import RenameDialog from '../components/chat/RenameDialog';
 
 export default function RootPage() {
   const isFullscreen = useAppSelector((state) => state.ui.isFullscreen);
   return (
-    <Theme accentColor="gray" grayColor='gray'>
+    <Theme accentColor="blue" grayColor='gray'>
       <div className="h-screen relative">
         <div className="flex z-0 w-full h-full">
           <Sidebar />
@@ -28,6 +29,7 @@ export default function RootPage() {
         </div>
       </div>
       <SettingDialog />
+      <RenameDialog />
       <Hotkeys />
     </Theme>
   );
