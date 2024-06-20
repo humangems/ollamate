@@ -8,6 +8,7 @@ import remarkMath from 'remark-math';
 import { Message } from '../../lib/types';
 import { useAppSelector } from '../../redux/store';
 import OllamaIcon from '../icons/Ollama';
+import CopyButton from './CopyButton';
 
 
 export default function OtherMessage({ message }: { message: Message }) {
@@ -31,7 +32,15 @@ export default function OtherMessage({ message }: { message: Message }) {
             {message.content}
           </Markdown>
           <div className="flex items-center space-x-1 text-2 text-gray-11">
-            <div>{message.model}</div>
+            {!isStreaming && (
+              <div className="flex items-center space-x-2">
+                <CopyButton content={message.content} />
+                <div className="flex items-center space-x-1">
+                  {/* <StarsIcon size={16} /> */}
+                  <div>{message.model}</div>
+                </div>
+              </div>
+            )}
             {isStreaming && <LoaderIcon className="animate-spin" size={14} />}
           </div>
         </div>
