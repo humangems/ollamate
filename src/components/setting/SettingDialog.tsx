@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/store";
 import { useForm } from "@mantine/form";
 import { OllamaServerConfig, getOllamaServerConfig, setOllamaServerConfig } from "../../lib/settingApi";
 import { useEffect } from "react";
+import CheckButton from "./CheckButton";
 
 
 type FormValues = {
@@ -23,11 +24,12 @@ export default function SettingDialog() {
       form.setFieldValue('ollamaServerUrl', config.url);
       form.setFieldValue('customOllamaServer', config.custom);
     });
-  }, [])
+  }, [settingOpen]);
 
   const handleChange = (isOpen: boolean) => {
     if (!isOpen) {
       dispatch(hideSetting());
+      form.reset();
     }
   }
 
@@ -44,6 +46,10 @@ export default function SettingDialog() {
     form.setFieldValue('customOllamaServer', value);
   }
 
+  const handleCheck = () => {
+
+  }
+
   return (
     <Dialog.Root open={settingOpen} onOpenChange={handleChange}>
       <Dialog.Content maxWidth="450px">
@@ -56,9 +62,7 @@ export default function SettingDialog() {
           <div className="pl-11 mt-2">
             <div className="flex items-center gap-2">
               <TextField.Root className="flex-1" {...form.getInputProps("ollamaServerUrl")} disabled={!form.values.customOllamaServer} />
-              <Button variant="outline" type="button">
-                Check
-              </Button>
+              <CheckButton url={form.values.ollamaServerUrl} />
             </div>
           </div>
 
