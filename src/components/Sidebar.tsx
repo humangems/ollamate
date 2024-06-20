@@ -1,8 +1,10 @@
 import { Button } from '@radix-ui/themes';
 import { motion } from 'framer-motion';
+import { PenBoxIcon, SettingsIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { chatSelectors, getAllChatsThunk } from '../redux/slice/chatSlice';
+import { showSetting } from '../redux/slice/uiSlice';
 import { useAppDispatch, useAppSelector } from '../redux/store';
 import ChatItem from './chat/ChatItem';
 
@@ -21,6 +23,10 @@ export default function Sidebar() {
     navigate('/');
   }
 
+  const handleSetting = () => {
+    dispatch(showSetting());
+  }
+
   return (
     <motion.div
       initial={{ width: 260 }}
@@ -31,17 +37,32 @@ export default function Sidebar() {
         <div className="h-14 drag-region shrink-0"></div>
         <div className="flex-1 px-2 flex flex-col">
           <div className="gap-y-2 space-y-3">
-            <Button className='w-full' variant='soft' color='gray' onClick={handleNew}>New Chat</Button>
+            <Button
+              className="w-full justify-start"
+              variant="soft"
+              color="gray"
+              onClick={handleNew}
+            >
+              <PenBoxIcon size={16} />
+              New Chat
+            </Button>
           </div>
 
           <div className="flex-1 mt-4">
-            <div className='text-1 px-2 py-1 shrink-0'>Conversations</div>
-            <div className='overflow-y-auto h-[calc(100vh-140px)] space-y-[1px]'>
+            <div className="text-1 px-2 py-1 shrink-0">Conversations</div>
+            <div className="overflow-y-auto h-[calc(100vh-170px)] space-y-[1px]">
               {chats.map((chat) => (
                 <ChatItem chat={chat} key={chat.id} active={chat.id === chatId} />
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="px-4">
+          <Button className="w-full h-6 justify-start" variant="ghost" color="gray" onClick={handleSetting}>
+            <SettingsIcon size={16} />
+            Settings
+          </Button>
         </div>
       </div>
     </motion.div>

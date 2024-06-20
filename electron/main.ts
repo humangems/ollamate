@@ -2,7 +2,8 @@ import { BrowserWindow, app, dialog, ipcMain } from 'electron'
 // import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readMdFiles } from './readMdFile'
+import "./setting-store";
+import { settingStore } from './setting-store';
 
 // const require = createRequire(import.meta.url) // require is not defined
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -79,28 +80,12 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.handle('open-directory-dialog', async (_event, _arg) => {
-  const result = await dialog.showOpenDialog(win!, {
-    properties: ['openDirectory'],
-  });
+ipcMain.handle('setting-set', async (_event, key, value) => {
+  await settingStore.set(key, value);
+})
 
-  if (result.canceled) {
-    return;
-  }
-
-  const folder = result.filePaths[0];
-  const pagesFolder = path.join(folder, 'pages');
-  const journalsFolder = path.join(folder, 'journals');
-  // iterate .md files in the folder
-  readMdFiles(journalsFolder, false, (note) => {
-    win?.webContents.send('import-note-message', note);
-  });
-
-  readMdFiles(pagesFolder, true, (note) => {
-    win?.webContents.send('import-note-message', note);
-  });
-
-  return result.filePaths;
+ipcMain.handle('setting-get', async (_event, key) => {
+  return await settingStore.get(key);
 })
 
 app.whenReady().then(createWindow)

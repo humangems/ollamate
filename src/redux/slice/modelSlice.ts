@@ -1,6 +1,6 @@
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import ollama from 'ollama/browser';
 import { Model } from '../../lib/types';
+import getOllama from '../../lib/ollamaApi';
 
 const modelAdapter = createEntityAdapter<Model, string>({
   selectId: (model) => model.name
@@ -18,8 +18,9 @@ export const getAllModelsThunk = createAsyncThunk<Model[]>(
   'models/getAllModels',
   async (_payload, thunkAPI) => {
     let response;
+    const ollamaInstance = await getOllama();
     try {
-      response = await ollama.list();
+      response = await ollamaInstance.list();
     } catch (error) {
       alert(`Failed to fetch models\n\n${error}`);
     }

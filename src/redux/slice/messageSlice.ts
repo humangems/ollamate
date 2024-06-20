@@ -6,9 +6,9 @@ import {
   createSlice,
   nanoid,
 } from '@reduxjs/toolkit';
-import ollama from 'ollama/browser';
 import { upsertChat } from '../../lib/chatApi';
 import { addMessage, getMessagesByChatId } from '../../lib/messageApi';
+import getOllama from '../../lib/ollamaApi';
 import { Chat, Message } from '../../lib/types';
 import { RootState } from '../store';
 
@@ -128,8 +128,10 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
 
     let response;
 
+    const ollamaInstance = await getOllama();
+
     try {
-      response = await ollama.chat({
+      response = await ollamaInstance.chat({
         model: payload.model,
         messages: [systemMsg, ...history],
         stream: true,

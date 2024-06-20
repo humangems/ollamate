@@ -17,7 +17,8 @@
     "publish-arm64": "electron-forge publish --arch=arm64"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",

@@ -1,6 +1,6 @@
 import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import ollama from 'ollama/browser';
 import { deleteChat, getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
+import getOllama from '../../lib/ollamaApi';
 import { Chat, Model } from '../../lib/types';
 import { llmChatThunk, streamEnd } from './messageSlice';
 
@@ -110,7 +110,9 @@ export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitle
       content: "Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language."
     }
 
-    const response = await ollama.chat({
+    const ollamaInstance = await getOllama();
+
+    const response = await ollamaInstance.chat({
       model: payload.model,
       messages: [...payload.messages, instruction],
       stream: false,
