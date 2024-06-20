@@ -46,10 +46,6 @@ export default function SettingDialog() {
     form.setFieldValue('customOllamaServer', value);
   }
 
-  const handleCheck = () => {
-
-  }
-
   return (
     <Dialog.Root open={settingOpen} onOpenChange={handleChange}>
       <Dialog.Content maxWidth="450px">

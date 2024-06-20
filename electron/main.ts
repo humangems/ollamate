@@ -1,4 +1,4 @@
-import { BrowserWindow, app, dialog, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain } from 'electron'
 // import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

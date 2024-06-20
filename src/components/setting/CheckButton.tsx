@@ -6,7 +6,7 @@ type CheckState = 'success' | 'error';
 
 export default function CheckButton({url}: {url: string}) {
   const [checking, setChecking] = useState(false);
-  const [status, setStatus] = useState<CheckState | null>(null);
+  const [_status, setStatus] = useState<CheckState | null>(null);
   const handleCheck = async () => {
     setChecking(true);
     try {
@@ -14,7 +14,7 @@ export default function CheckButton({url}: {url: string}) {
       await instance.list();
       setStatus('success');
       alert("Connection successful!");
-    } catch (e) {
+    } catch (e: any) {
       alert(`Failed to connect to the server\n\nAre you sure there is an ollama server running at ${url}?\n\n` + e.message);
       console.error(e);
       setStatus('error');
