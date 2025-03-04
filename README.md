@@ -1,6 +1,3 @@
-> [!WARNING]
-> Discontinued due to an abundance of similar products. Try Msty, currently the most promising option as of September 2024.
-
 # Ollamate
 
 <img src="https://github.com/humangems/ollamate/assets/33785/8c2f0f42-780e-404e-acff-3c87f7eb3085" width="128" />
