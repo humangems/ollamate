@@ -3,15 +3,23 @@ import { Outlet } from 'react-router-dom';
 import Hotkeys from '../components/Hotkeys';
 import Sidebar from '../components/Sidebar';
 import SettingDialog from '../components/setting/SettingDialog';
-import { useAppSelector } from '../redux/store';
+import { useAppDispatch, useAppSelector } from '../redux/store';
 import clsx from 'clsx';
 import SidebarActions from '../components/SidebarActions';
 import RenameDialog from '../components/chat/RenameDialog';
+import { useEffect } from 'react';
+import { getAllModelsThunk, getLastUsedModelNameThunk } from '../redux/slice/modelSlice';
 
 export default function RootPage() {
   const isFullscreen = useAppSelector((state) => state.ui.isFullscreen);
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(getAllModelsThunk());
+    dispatch(getLastUsedModelNameThunk());
+  }, []);
+
   return (
-    <Theme accentColor="blue" grayColor='gray'>
+    <Theme accentColor="blue" grayColor="gray">
       <div className="h-screen relative">
         <div className="flex z-0 w-full h-full">
           <Sidebar />
