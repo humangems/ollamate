@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Message } from '../../lib/types';
 import { useAppSelector } from '../../redux/store';
-import OllamaIcon from '../icons/Ollama';
+// import OllamaIcon from '../icons/Ollama';
 import CopyButton from './CopyButton';
 import { extractReasoning } from '../../lib/reasoningHelper';
 

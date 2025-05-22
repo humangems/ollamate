@@ -1,17 +1,16 @@
-import clsx from 'clsx';
+import { cn } from '@/lib/utils';
+import { PanelLeftIcon, PenBoxIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Chat } from '../../lib/types';
 import { generateTitleThunk, updateModelThunk } from '../../redux/slice/chatSlice';
 import { getMessagesThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
 import ModelSelect from '../ModelSelect';
+import { Button } from '../ui/button';
+import { useSidebar } from '../ui/sidebar';
 import MessageHistory from './MessageHistory';
 import MessageInput from './MessageInput';
-import { SidebarTrigger, useSidebar } from '../ui/sidebar';
-import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
-import { PanelLeft, PanelLeftIcon, PenBoxIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 type ChatViewProps = {
   chat: Chat;
