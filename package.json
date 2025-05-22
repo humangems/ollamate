@@ -42,7 +42,7 @@
     "@mantine/hooks": "^7.9.2",
     "@radix-ui/themes": "^3.0.5",
     "@reduxjs/toolkit": "^2.2.5",
-    "@tailwindcss/typography": "^0.5.13",
+    "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.7",
     "@types/lodash": "^4.17.4",
     "@types/node": "^22.15.21",

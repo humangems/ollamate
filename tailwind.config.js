@@ -1,11 +1,16 @@
 /** @type {import('tailwindcss').Config} */
-import { radixThemePreset } from 'radix-themes-tw';
 
 export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
-    extend: {},
+    extend: {
+      typography: () => ({
+        shadcn: {
+          css: {
+            '--tw-prose-body': 'var(--color-foreground)',
+          },
+        },
+      }),
+    },
   },
-  plugins: [require('@tailwindcss/typography')],
-  presets: [radixThemePreset],
+  // plugins: [require('@tailwindcss/typography')],
 };

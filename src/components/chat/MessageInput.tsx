@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { llmChatThunk } from '../../redux/slice/messageSlice';
 import { useAppDispatch } from '../../redux/store';
+import { Button } from '@/components/ui/button';
 
 type FormValues = {
   message: string;
@@ -16,7 +17,7 @@ type MessageInputProps = {
   isNewChat: boolean;
 };
 
-export default function MessageInput({ chatId, model,  isNewChat = false }: MessageInputProps) {
+export default function MessageInput({ chatId, model, isNewChat = false }: MessageInputProps) {
   const dispatch = useAppDispatch();
   const formRef = useRef<HTMLFormElement>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -57,7 +58,7 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
 
   const handleFileClick = () => {
     inputFileRef.current?.click();
-  }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -73,13 +74,12 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
     };
 
     reader.readAsDataURL(file);
-
-  }
+  };
 
   return (
     <div className="max-w-3xl w-full px-4 mx-auto">
       <form onSubmit={form.onSubmit(handleSubmit)} ref={formRef}>
-        <div className="flex min-h-12 relative items-center justify-between rounded-[24px] bg-gray-3 px-2 backdrop-blur">
+        <div className="flex min-h-12 relative items-center justify-between rounded-xl border bg-muted px-2">
           <div className="size-8 shrink-0">
             <div className="absolute bottom-2 ">
               <button
@@ -125,16 +125,10 @@ export default function MessageInput({ chatId, model,  isNewChat = false }: Mess
             </div>
           </div>
 
-          <div className="shrink-0 size-8">
-            <div className="absolute bottom-2">
-              <button
-                type="submit"
-                disabled={!form.values.message}
-                className="rounded-full size-8 bg-grayA-11 hover:bg-gray-4 text-[#fff] active:bg-gray-5 flex items-center justify-center disabled:bg-grayA-3"
-              >
-                <ArrowUpIcon size={20} className="" />
-              </button>
-            </div>
+          <div className="">
+            <Button disabled={!form.values.message}>
+              <ArrowUpIcon className="" />
+            </Button>
           </div>
         </div>
       </form>

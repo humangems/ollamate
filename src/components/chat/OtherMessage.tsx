@@ -26,7 +26,7 @@ export default function OtherMessage({ message }: { message: Message }) {
           Think
         </div>
 
-        <div className="opacity-60  border-gray-3 p-4 prose-sm bg-gray-2 rounded-3">
+        <div className="text-muted-foreground bg-muted p-4 prose-sm rounded-md">
           <Markdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex, rehypeMathjax]}
@@ -50,7 +50,7 @@ export default function OtherMessage({ message }: { message: Message }) {
         </div>
         <div className="flex-1">
           {thinkingNode}
-          <div className="prose my-4">
+          <div className="prose prose-shadcn my-4">
             <Markdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex, rehypeMathjax]}
