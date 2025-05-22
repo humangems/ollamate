@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Message } from '../../lib/types';
 import { selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppSelector } from '../../redux/store';
@@ -9,39 +9,39 @@ type MessageHistoryProps = {
   chatId: string;
 };
 
+const isUserNearBottom = (element: HTMLElement, threshold = 50) => {
+  const position = element.scrollTop + element.clientHeight;
+  const height = element.scrollHeight;
+  return position > height - threshold;
+};
+
 export default function MessageHistory({ chatId }: MessageHistoryProps) {
   const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chatId));
-  const messagesRef = useRef<HTMLDivElement>(null);
-  const isStreaming = useAppSelector((state: RootState) => state.chats.isStreaming[chatId]);
-  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+
+  const onScroll = () => {
+    if (!containerRef.current) return;
+    const nearBottom = isUserNearBottom(containerRef.current, 50);
+    setAutoScroll(nearBottom);
+  };
 
   useEffect(() => {
     setTimeout(() => {
-      if (messagesRef.current) {
-        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+      if (containerRef.current) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
       }
     }, 50);
   }, [chatId]);
 
   useEffect(() => {
-    if (isStreaming) {
-      if (intervalIdRef.current) clearInterval(intervalIdRef.current);
-      intervalIdRef.current = setInterval(() => {
-        if (messagesRef.current) {
-          messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-        }
-      }, 200);
+    if (autoScroll && containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-
-    return () => {
-      if (intervalIdRef.current) {
-        clearInterval(intervalIdRef.current);
-      }
-    };
-  }, [isStreaming]);
+  }, [messages, autoScroll]);
 
   return (
-    <div className=" h-[calc(100vh-52px)] overflow-y-auto" ref={messagesRef}>
+    <div className=" h-[calc(100vh-52px)] overflow-y-auto" ref={containerRef} onScroll={onScroll}>
       <div className="pb-24 px-4 max-w-3xl mx-auto">
         {messages.map((message: Message) => {
           return message.role === 'user' ? (
