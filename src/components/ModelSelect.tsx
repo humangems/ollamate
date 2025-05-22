@@ -1,4 +1,4 @@
-import { Select } from '@radix-ui/themes';
+import { ChevronRightIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   getAllModelsThunk,
@@ -6,6 +6,14 @@ import {
   updateLastUsedModelNameThunk,
 } from '../redux/slice/modelSlice';
 import { useAppDispatch, useAppSelector } from '../redux/store';
+import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 type ModelSelectProps = {
   value: string;
@@ -35,20 +43,22 @@ export default function ModelSelect({ value, onChange }: ModelSelectProps) {
   };
 
   return (
-    <Select.Root value={internalValue} onValueChange={handleChange} size="2">
-      <Select.Trigger
-        placeholder="Select a model"
-        variant="ghost"
-        color="gray"
-        className="font-medium text-[15px]"
-      ></Select.Trigger>
-      <Select.Content color="gray" position="popper">
-        {models.map((model) => (
-          <Select.Item key={model.name} value={model.name}>
-            {model.name}
-          </Select.Item>
-        ))}
-      </Select.Content>
-    </Select.Root>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild className="no-drag-region">
+        <Button variant="ghost" size="sm">
+          <span>{internalValue || 'Select a model'}</span>
+          <ChevronRightIcon className="size-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuRadioGroup value={internalValue} onValueChange={handleChange}>
+          {models.map((model) => (
+            <DropdownMenuRadioItem key={model.name} value={model.name}>
+              {model.name}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

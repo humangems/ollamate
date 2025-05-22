@@ -66,7 +66,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   return (
     <div className="flex flex-col relative h-full">
       <div
-        className={cn(' bg-[#fff] h-[52px] flex items-center shrink-0 drag-region pl-4', {
+        className={cn('bg-background h-[52px] flex items-center shrink-0 drag-region pl-4', {
           'pl-20': sidebarState === 'collapsed',
         })}
       >
@@ -80,9 +80,8 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
             </Button>
           </>
         )}
-        <div className={clsx('no-drag-region')}>
-          <ModelSelect value={internalModel} onChange={handleModelChange} />
-        </div>
+
+        <ModelSelect value={internalModel} onChange={handleModelChange} />
       </div>
 
       <div className="flex-1 w-full h-full">
