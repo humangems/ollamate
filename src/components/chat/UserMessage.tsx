@@ -9,7 +9,7 @@ function InputImage({ data }: { data: string }) {
 export default function UserMessage({ message }: { message: Message }) {
   return (
     <div className="w-full flex justify-end py-4">
-      <div className="bg-muted max-w-[75%] py-2 px-3 rounded-md">
+      <div className="bg-muted max-w-[75%] p-4 rounded-lg">
         <div className="prose prose-shadcn flex-1">
           {message.images && (
             <div>

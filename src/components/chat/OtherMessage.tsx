@@ -50,7 +50,7 @@ export default function OtherMessage({ message }: { message: Message }) {
         </div> */}
         <div className="flex-1">
           {thinkingNode}
-          <div className="prose prose-shadcn my-4">
+          <div className="prose prose-shadcn my-4 max-w-none">
             <Markdown
               remarkPlugins={[remarkGfm, remarkMath]}
               rehypePlugins={[rehypeKatex, rehypeMathjax]}
@@ -58,7 +58,7 @@ export default function OtherMessage({ message }: { message: Message }) {
               {content}
             </Markdown>
           </div>
-          <div className="flex items-center space-x-1 text-2 text-gray-11">
+          <div className="flex items-center space-x-1">
             {!isStreaming && (
               <div className="flex items-center space-x-2">
                 <CopyButton content={message.content} />
