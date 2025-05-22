@@ -7,6 +7,7 @@ import RenameDialog from '../components/chat/RenameDialog';
 import SettingDialog from '../components/setting/SettingDialog';
 import { getAllModelsThunk, getLastUsedModelNameThunk } from '../redux/slice/modelSlice';
 import { useAppDispatch, useAppSelector } from '../redux/store';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export default function RootPage() {
   const isFullscreen = useAppSelector((state) => state.ui.isFullscreen);
@@ -17,14 +18,16 @@ export default function RootPage() {
   }, []);
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main className=" w-full">
-        <Outlet />
-      </main>
-      <SettingDialog />
-      <RenameDialog />
-      <Hotkeys />
-    </SidebarProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <SidebarProvider>
+        <AppSidebar />
+        <main className=" w-full">
+          <Outlet />
+        </main>
+        <SettingDialog />
+        <RenameDialog />
+        <Hotkeys />
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }

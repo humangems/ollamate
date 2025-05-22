@@ -79,7 +79,7 @@ export default function MessageInput({ chatId, model, isNewChat = false }: Messa
   return (
     <div className="max-w-3xl w-full px-4 mx-auto">
       <form onSubmit={form.onSubmit(handleSubmit)} ref={formRef}>
-        <div className="flex min-h-12 relative items-center justify-between rounded-xl border bg-muted px-2">
+        <div className="flex min-h-12 relative items-center justify-between rounded-xl border shadow-md bg-muted px-2">
           <div className="">
             <Button onClick={handleFileClick} variant="ghost" className="hover:bg-black/5">
               <PlusIcon />

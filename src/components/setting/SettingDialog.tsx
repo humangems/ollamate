@@ -13,6 +13,7 @@ import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { ModeToggle } from './ModeToggle';
 
 type FormValues = {
   ollamaServerUrl: string;
@@ -58,30 +59,41 @@ export default function SettingDialog() {
         <DialogHeader>
           <DialogTitle>Setting</DialogTitle>
         </DialogHeader>
-        <div className="flex items-center gap-2">
-          <Switch
-            id="switchCustomServer"
-            checked={form.values.customOllamaServer}
-            onCheckedChange={handleCheckChange}
-          />
-          <Label htmlFor="switchCustomServer">Customize Ollama Server</Label>
-        </div>
-        <form onSubmit={form.onSubmit(handleSubmit)}>
-          <div className="pl-11 mt-2">
-            <div className="flex items-center gap-2">
-              <Input
-                className="flex-1"
-                {...form.getInputProps('ollamaServerUrl')}
-                disabled={!form.values.customOllamaServer}
-              />
-              <CheckButton url={form.values.ollamaServerUrl} />
-            </div>
+        <div className=" gap-4 divide-y">
+          <div className="flex items-center justify-between py-4">
+            <Label>Theme</Label>
+            <ModeToggle />
           </div>
 
-          <div className="mt-8 flex items-center justify-end">
-            <Button type="submit">Save</Button>
+          <div className="py-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="switchCustomServer">Customize Ollama Server</Label>
+              <Switch
+                id="switchCustomServer"
+                checked={form.values.customOllamaServer}
+                onCheckedChange={handleCheckChange}
+              />
+            </div>
+            {form.values.customOllamaServer && (
+              <form onSubmit={form.onSubmit(handleSubmit)}>
+                <div className="mt-4">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      className="flex-1"
+                      {...form.getInputProps('ollamaServerUrl')}
+                      disabled={!form.values.customOllamaServer}
+                    />
+                    <CheckButton url={form.values.ollamaServerUrl} />
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-end">
+                  <Button type="submit">Save</Button>
+                </div>
+              </form>
+            )}
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

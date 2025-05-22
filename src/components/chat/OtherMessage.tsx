@@ -41,13 +41,13 @@ export default function OtherMessage({ message }: { message: Message }) {
   return (
     <div className="w-full py-4">
       <div className="flex items-start space-x-2">
-        <div className="w-12 shrink-0 font-medium text-gray-11 text-2">
+        {/* <div className="w-12 shrink-0 font-medium text-gray-11 text-2">
           <div className=" size-9 bg-muted rounded-full flex items-center justify-center">
             <div className="p-2">
               <OllamaIcon />
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="flex-1">
           {thinkingNode}
           <div className="prose prose-shadcn my-4">
