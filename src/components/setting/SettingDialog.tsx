@@ -1,4 +1,3 @@
-import { Button, Dialog, Switch, Text, TextField } from '@radix-ui/themes';
 import { hideSetting } from '../../redux/slice/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../redux/store';
 import { useForm } from '@mantine/form';
@@ -9,6 +8,11 @@ import {
 } from '../../lib/settingApi';
 import { useEffect } from 'react';
 import CheckButton from './CheckButton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 
 type FormValues = {
   ollamaServerUrl: string;
@@ -49,17 +53,23 @@ export default function SettingDialog() {
   };
 
   return (
-    <Dialog.Root open={settingOpen} onOpenChange={handleChange}>
-      <Dialog.Content maxWidth="450px">
-        <Dialog.Title>Setting</Dialog.Title>
+    <Dialog open={settingOpen} onOpenChange={handleChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Setting</DialogTitle>
+        </DialogHeader>
         <div className="flex items-center gap-2">
-          <Switch checked={form.values.customOllamaServer} onCheckedChange={handleCheckChange} />
-          <Text>Customize Ollama Server</Text>
+          <Switch
+            id="switchCustomServer"
+            checked={form.values.customOllamaServer}
+            onCheckedChange={handleCheckChange}
+          />
+          <Label htmlFor="switchCustomServer">Customize Ollama Server</Label>
         </div>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <div className="pl-11 mt-2">
             <div className="flex items-center gap-2">
-              <TextField.Root
+              <Input
                 className="flex-1"
                 {...form.getInputProps('ollamaServerUrl')}
                 disabled={!form.values.customOllamaServer}
@@ -72,7 +82,7 @@ export default function SettingDialog() {
             <Button type="submit">Save</Button>
           </div>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   );
 }

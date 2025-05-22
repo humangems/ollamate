@@ -1,8 +1,9 @@
-import { useForm } from "@mantine/form";
-import { Button, TextField } from "@radix-ui/themes";
-import { chatSelectors, updateChatTitleThunk } from "../../redux/slice/chatSlice";
-import { stopRenaming } from "../../redux/slice/uiSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { useForm } from '@mantine/form';
+import { chatSelectors, updateChatTitleThunk } from '../../redux/slice/chatSlice';
+import { stopRenaming } from '../../redux/slice/uiSlice';
+import { useAppDispatch, useAppSelector } from '../../redux/store';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button';
 
 type FormValues = {
   title: string;
@@ -20,9 +21,9 @@ export default function RenameForm({ chatId }: { chatId: string }) {
   });
 
   const handleSubmit = (values: FormValues) => {
-    dispatch(updateChatTitleThunk({ chatId, title: values.title}));
+    dispatch(updateChatTitleThunk({ chatId, title: values.title }));
     dispatch(stopRenaming());
-  }
+  };
 
   const handleCancel = () => {
     dispatch(stopRenaming());
@@ -31,10 +32,10 @@ export default function RenameForm({ chatId }: { chatId: string }) {
   return (
     <form onSubmit={form.onSubmit(handleSubmit)} action="xxx">
       <div>
-        <TextField.Root className="w-full" {...form.getInputProps("title")} />
+        <Input className="w-full" {...form.getInputProps('title')} />
       </div>
       <div className="flex items-center justify-end mt-2 space-x-3">
-        <Button color="gray" variant="soft" onClick={handleCancel} type="button">
+        <Button variant="secondary" onClick={handleCancel} type="button">
           Cancel
         </Button>
         <Button type="submit">Rename</Button>

@@ -80,23 +80,17 @@ export default function MessageInput({ chatId, model, isNewChat = false }: Messa
     <div className="max-w-3xl w-full px-4 mx-auto">
       <form onSubmit={form.onSubmit(handleSubmit)} ref={formRef}>
         <div className="flex min-h-12 relative items-center justify-between rounded-xl border bg-muted px-2">
-          <div className="size-8 shrink-0">
-            <div className="absolute bottom-2 ">
-              <button
-                className="size-8 rounded-full flex items-center justify-center hover:bg-gray-4"
-                type="button"
-                onClick={handleFileClick}
-              >
-                <PlusIcon size={20} />
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={inputFileRef}
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </button>
-            </div>
+          <div className="">
+            <Button onClick={handleFileClick} variant="ghost" className="hover:bg-black/5">
+              <PlusIcon />
+              <input
+                type="file"
+                className="hidden"
+                ref={inputFileRef}
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Button>
           </div>
           <div className="flex-1">
             <div className="w-full">
