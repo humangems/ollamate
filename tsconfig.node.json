@@ -6,7 +6,6 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

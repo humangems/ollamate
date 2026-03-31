@@ -23,6 +23,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   const [internalModel, setInternalModel] = useState(chat.model);
   const { state: sidebarState, toggleSidebar } = useSidebar();
   const navigate = useNavigate();
+  const activeModel = isNewChat ? internalModel : chat.model;
   const handleNewChat = () => {
     navigate('/');
   };
@@ -30,10 +31,6 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   useEffect(() => {
     dispatch(getMessagesThunk(chat.id));
   }, [chat.id, dispatch]);
-
-  useEffect(() => {
-    setInternalModel(chat.model);
-  }, [chat.model]);
 
   useEffect(() => {
     if (chat.title) return;
@@ -49,10 +46,10 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
             content: m.content,
           };
         }),
-        model: internalModel,
+        model: activeModel,
       })
     );
-  }, [chat.id, chat.title, dispatch, internalModel, messages]);
+  }, [activeModel, chat.id, chat.title, dispatch, messages]);
 
   const handleModelChange = (value: string) => {
     if (!isNewChat) {
@@ -80,7 +77,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
           </>
         )}
 
-        <ModelSelect value={internalModel} onChange={handleModelChange} />
+        <ModelSelect value={activeModel} onChange={handleModelChange} />
       </div>
 
       <div className="flex-1 w-full h-full">
@@ -88,7 +85,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
       </div>
 
       <div className="absolute bottom-6 left-0 right-0">
-        <MessageInput chatId={chat.id} model={internalModel} isNewChat={isNewChat} />
+        <MessageInput chatId={chat.id} model={activeModel} isNewChat={isNewChat} />
       </div>
     </div>
   );
