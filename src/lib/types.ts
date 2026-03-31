@@ -34,6 +34,7 @@ export type Message = {
   role: string;
   content: string;
   model?: string;
+  provider?: string;
   created_at?: number;
   updated_at?: number;
   eval_count?: number;

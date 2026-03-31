@@ -1,6 +1,8 @@
+import { generateText } from 'ai';
 import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import { deleteChat, getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
-import getOllama from '../../lib/ollamaApi';
+import { getOllamaProvider } from '../../lib/ollamaApi';
+import { toModelMessages } from '../../lib/aiSdk';
 import { Chat, Model } from '../../lib/types';
 import { llmChatThunk, streamEnd } from './messageSlice';
 
@@ -49,6 +51,8 @@ export const chatSlice = createSlice({
       .addCase(llmChatThunk.pending, (state, action) => {
         state.isStreaming[action.meta.arg.chatId] = true;
       }).addCase(llmChatThunk.fulfilled, (state, action) => {
+        state.isStreaming[action.meta.arg.chatId] = false;
+      }).addCase(llmChatThunk.rejected, (state, action) => {
         state.isStreaming[action.meta.arg.chatId] = false;
       })
   }
@@ -104,26 +108,27 @@ type GeneratedTitle = {
 export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitlePayload>(
   'chats/generateTitle',
   async (payload, _thunkAPI) => {
-
     const instruction = {
-      role: "user",
-      content: "Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language."
-    }
+      role: 'user',
+      content:
+        'Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language.',
+    };
 
-    const ollamaInstance = await getOllama();
+    const ollamaProvider = await getOllamaProvider();
 
-    const response = await ollamaInstance.chat({
-      model: payload.model,
-      messages: [...payload.messages, instruction],
-      stream: false,
+    const { text } = await generateText({
+      model: ollamaProvider(payload.model),
+      messages: toModelMessages([...payload.messages, instruction]),
     });
 
-    await updateChatTitle(payload.chatId, response.message.content);
+    const title = text.trim();
+
+    await updateChatTitle(payload.chatId, title);
 
     return {
       chatId: payload.chatId,
-      title: response.message.content
-    }
+      title,
+    };
   }
 );
 

@@ -1,3 +1,4 @@
+import { streamText } from 'ai';
 import {
   PayloadAction,
   createAsyncThunk,
@@ -7,8 +8,9 @@ import {
   nanoid,
 } from '@reduxjs/toolkit';
 import { upsertChat } from '../../lib/chatApi';
+import { DEFAULT_SYSTEM_PROMPT, toModelMessages } from '../../lib/aiSdk';
 import { addMessage, getMessagesByChatId } from '../../lib/messageApi';
-import getOllama from '../../lib/ollamaApi';
+import { getOllamaProvider } from '../../lib/ollamaApi';
 import { Chat, Message } from '../../lib/types';
 import { RootState } from '../store';
 
@@ -54,13 +56,21 @@ export const messageSlice = createSlice({
     },
 
     streaming: (state, action: PayloadAction<Message>) => {
-      state.entities[action.payload.id].content += action.payload.content;
-      state.entities[action.payload.id].eval_count = action.payload.eval_count;
-      state.entities[action.payload.id].eval_duration = action.payload.eval_duration;
-      state.entities[action.payload.id].updated_at = Date.now();
+      const message = state.entities[action.payload.id];
+
+      if (!message) return;
+
+      message.content += action.payload.content;
+      message.eval_count = action.payload.eval_count;
+      message.eval_duration = action.payload.eval_duration;
+      message.updated_at = Date.now();
     },
 
     streamEnd: (state, action: PayloadAction<StreamEventType>) => {
+      state.isStreaming[action.payload.messageId] = false;
+    },
+
+    streamAbort: (state, action: PayloadAction<{ messageId: string }>) => {
       state.isStreaming[action.payload.messageId] = false;
     },
   },
@@ -90,14 +100,13 @@ export const getMessagesThunk = createAsyncThunk<Message[], string>(
 export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
   'messages/llmChat',
   async (payload, thunkAPI) => {
-
     const userMessage: Message = {
       chat_id: payload.chatId,
-      role: "user",
+      role: 'user',
       content: payload.content,
       images: payload.images,
       id: nanoid(),
-    }
+    };
 
     const server = await addMessage(userMessage);
 
@@ -105,17 +114,9 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
 
     const state = thunkAPI.getState() as RootState;
     const history = Object.values(state.messages.entities)
-      .filter((m) => m.chat_id === payload.chatId)
-      .map((m) => {
-        return {
-          role: m.role,
-          content: m.content,
-          images: m.images
-        };
-      });
+      .filter((message): message is Message => Boolean(message) && message.chat_id === payload.chatId);
 
     const messageId = nanoid();
-    const systemMsg = { role: 'system', content: 'You are a helpful assistant.' };
 
     thunkAPI.dispatch(
       streamStart({
@@ -126,69 +127,100 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
       })
     );
 
-    let response;
-
-    const ollamaInstance = await getOllama();
-
-    try {
-      response = await ollamaInstance.chat({
-        model: payload.model,
-        messages: [systemMsg, ...history],
-        stream: true,
-      });
-    } catch(e) {
-      const error = e as Error;
-      alert(`Error occurred while chatting with the model: ${payload.model}\n\n${error.message}`);
-    }
-
-    if (!response) return;
-
     let content = '';
 
-    for await (const part of response) {
-      content += part.message.content;
+    try {
+      const ollamaProvider = await getOllamaProvider();
+      const result = streamText({
+        model: ollamaProvider(payload.model),
+        system: DEFAULT_SYSTEM_PROMPT,
+        messages: toModelMessages(history),
+      });
+
+      for await (const part of result.fullStream) {
+        if (part.type === 'reasoning-start') {
+          content += '<think>\n';
+          thunkAPI.dispatch(
+            streaming({
+              id: messageId,
+              chat_id: payload.chatId,
+              role: 'assistant',
+              content: '<think>\n',
+              model: payload.model,
+            })
+          );
+          continue;
+        }
+
+        if (part.type === 'reasoning-end') {
+          content += '\n</think>\n\n';
+          thunkAPI.dispatch(
+            streaming({
+              id: messageId,
+              chat_id: payload.chatId,
+              role: 'assistant',
+              content: '\n</think>\n\n',
+              model: payload.model,
+            })
+          );
+          continue;
+        }
+
+        if (part.type === 'text-delta' || part.type === 'reasoning-delta') {
+          content += part.text;
+          thunkAPI.dispatch(
+            streaming({
+              id: messageId,
+              chat_id: payload.chatId,
+              role: 'assistant',
+              content: part.text,
+              model: payload.model,
+            })
+          );
+          continue;
+        }
+
+        if (part.type === 'error') {
+          throw (part.error instanceof Error ? part.error : new Error(String(part.error)));
+        }
+      }
+
+      const totalUsage = await result.totalUsage;
+
+      const chat: Chat = {
+        id: payload.chatId,
+        model: payload.model,
+      };
+      if (payload.isNewChat) {
+        chat.created_at = Date.now();
+      }
+      await upsertChat(chat);
+
+      const newMsg: Message = {
+        id: messageId,
+        chat_id: payload.chatId,
+        content,
+        role: 'assistant',
+        model: payload.model,
+        eval_count: totalUsage.outputTokens ?? undefined,
+      };
+
+      await addMessage(newMsg);
+
       thunkAPI.dispatch(
-        streaming({
-          id: messageId,
-          chat_id: payload.chatId,
-          role: part.message.role,
-          content: part.message.content,
+        streamEnd({
+          chatId: payload.chatId,
+          messageId,
+          isNewChat: payload.isNewChat,
           model: payload.model,
-          eval_count: part.eval_count,
-          eval_duration: part.eval_duration,
-          done: part.done,
+          chatCreatedAt: chat.created_at,
         })
       );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      thunkAPI.dispatch(streamAbort({ messageId }));
+      alert(`Error occurred while chatting with the model: ${payload.model}\n\n${message}`);
     }
-
-    const chat: Chat = {
-      id: payload.chatId,
-      model: payload.model,
-    };
-    if (payload.isNewChat) {
-      chat.created_at = Date.now();
-    }
-    await upsertChat(chat);
-
-    const newMsg: Message = {
-      id: messageId,
-      chat_id: payload.chatId,
-      content: content,
-      role: "assistant",
-      model: payload.model
-    }
-
-    await addMessage(newMsg)
-
-    thunkAPI.dispatch(
-      streamEnd({
-        chatId: payload.chatId,
-        messageId,
-        isNewChat: payload.isNewChat,
-        model: payload.model,
-        chatCreatedAt: chat.created_at,
-      })
-    );
   }
 );
 
@@ -211,7 +243,7 @@ export const countMessagesByChatId = createSelector(
 );
 
 // Action creators are generated for each case reducer function
-export const { allModelsLoaded, streaming, streamStart, streamEnd, newUserMessage } =
+export const { allModelsLoaded, streaming, streamStart, streamEnd, streamAbort, newUserMessage } =
   messageSlice.actions;
 
 export default messageSlice.reducer;
