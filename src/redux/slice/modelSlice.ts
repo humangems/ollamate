@@ -53,7 +53,7 @@ export const getAllModelsThunk = createAsyncThunk<Model[]>(
   }
 );
 
-export const getLastUsedModelNameThunk = createAsyncThunk<string>(
+export const getLastUsedModelNameThunk = createAsyncThunk<string | null>(
   'models/getLastUsedModel',
   async (_payload, _thunkAPI) => {
     const lastUsed = getLastUsedModel();

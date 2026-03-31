@@ -1,13 +1,14 @@
-import { addRxPlugin, createRxDatabase } from 'rxdb';
+import { addRxPlugin, createRxDatabase, removeRxDatabase } from 'rxdb';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { ImportedNote, Note } from './types';
 import { nanoid } from '@reduxjs/toolkit';
 
 addRxPlugin(RxDBDevModePlugin);
 
-const db = await createRxDatabase({
-  name: 'ollamate',
+const DB_NAME = 'ollamate';
+const storage = wrappedValidateAjvStorage({
   storage: getRxStorageDexie(),
 });
 
@@ -104,17 +105,58 @@ const messageSchema = {
   required: ['id', 'chat_id', 'role', 'content', 'created_at', 'updated_at'],
 };
 
-export const collections = await db.addCollections({
-  notes: {
-    schema: noteSchema,
-  },
-  chats: {
-    schema: chatSchema,
-  },
-  messages: {
-    schema: messageSchema,
-  },
-});
+async function createDatabase() {
+  const db = await createRxDatabase({
+    name: DB_NAME,
+    storage,
+    closeDuplicates: true,
+  });
+
+  const collections = await db.addCollections({
+    notes: {
+      schema: noteSchema,
+    },
+    chats: {
+      schema: chatSchema,
+    },
+    messages: {
+      schema: messageSchema,
+    },
+  });
+
+  return { db, collections };
+}
+
+async function initDatabase() {
+  try {
+    return await createDatabase();
+  } catch (error) {
+    if ((error as { code?: string })?.code !== 'DM5') {
+      throw error;
+    }
+
+    console.warn(
+      'Resetting incompatible local RxDB state created by an older major version.'
+    );
+    await removeRxDatabase(DB_NAME, storage);
+    return createDatabase();
+  }
+}
+
+type DatabaseState = Awaited<ReturnType<typeof initDatabase>>;
+
+const rxdbGlobal = globalThis as typeof globalThis & {
+  __ollamateDatabaseStatePromise?: Promise<DatabaseState>;
+};
+
+if (!rxdbGlobal.__ollamateDatabaseStatePromise) {
+  rxdbGlobal.__ollamateDatabaseStatePromise = initDatabase().catch((error) => {
+    delete rxdbGlobal.__ollamateDatabaseStatePromise;
+    throw error;
+  });
+}
+
+export const { collections } = await rxdbGlobal.__ollamateDatabaseStatePromise;
 
 export async function getAllNotes() {
   const result = await collections.notes
