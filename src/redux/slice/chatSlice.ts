@@ -30,7 +30,7 @@ export const chatSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(streamEnd, (state, action) => {
-        let chat: Chat = {
+        const chat: Chat = {
           id: action.payload.chatId,
           model: action.payload.model,
         };

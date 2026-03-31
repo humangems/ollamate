@@ -14,7 +14,7 @@ export default function RootPage() {
   useEffect(() => {
     dispatch(getAllModelsThunk());
     dispatch(getLastUsedModelNameThunk());
-  }, []);
+  }, [dispatch]);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">

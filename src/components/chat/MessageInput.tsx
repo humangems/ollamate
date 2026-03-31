@@ -2,7 +2,7 @@ import { useForm } from '@mantine/form';
 import { ArrowUpIcon, PlusIcon } from 'lucide-react';
 import { useRef } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import { llmChatThunk } from '../../redux/slice/messageSlice';
+import { llmChatThunk, type NewMessagePayloadType } from '../../redux/slice/messageSlice';
 import { useAppDispatch } from '../../redux/store';
 import { Button } from '@/components/ui/button';
 
@@ -32,15 +32,14 @@ export default function MessageInput({ chatId, model, isNewChat = false }: Messa
     if (values.message.trim() === '') return;
 
     if (model) {
-      let payload = {
+      const payload: NewMessagePayloadType = {
         chatId: chatId,
         content: values.message,
         model,
         isNewChat,
       };
       if (values.image) {
-        //@ts-ignore
-        payload['images'] = [values.image];
+        payload.images = [values.image];
       }
       dispatch(llmChatThunk(payload));
       form.reset();
@@ -65,9 +64,9 @@ export default function MessageInput({ chatId, model, isNewChat = false }: Messa
     if (e.target.files.length === 0) return;
 
     const file = e.target.files[0];
-    var reader = new FileReader();
+    const reader = new FileReader();
 
-    reader.onload = function () {
+    reader.onload = () => {
       const result = reader.result as string;
       const base64String = result.replace('data:', '').replace(/^.+,/, '');
       form.setFieldValue('image', base64String);

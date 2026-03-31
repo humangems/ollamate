@@ -23,13 +23,30 @@ type FormValues = {
 export default function SettingDialog() {
   const settingOpen = useAppSelector((state) => state.ui.settingOpen);
   const dispatch = useAppDispatch();
-  const form = useForm<FormValues>();
+  const form = useForm<FormValues>({
+    initialValues: {
+      ollamaServerUrl: '',
+      customOllamaServer: false,
+    },
+  });
 
   useEffect(() => {
+    if (!settingOpen) return;
+
+    let active = true;
     getOllamaServerConfig().then((config) => {
-      form.setFieldValue('ollamaServerUrl', config.url);
-      form.setFieldValue('customOllamaServer', config.custom);
+      if (!active) return;
+      form.setValues({
+        ollamaServerUrl: config.url,
+        customOllamaServer: config.custom,
+      });
     });
+
+    return () => {
+      active = false;
+    };
+    // Mantine's form object is not stable enough for this dependency array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settingOpen]);
 
   const handleChange = (isOpen: boolean) => {

@@ -20,7 +20,7 @@ export function AppSidebar() {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(getAllChatsThunk());
-  }, []);
+  }, [dispatch]);
 
   const handleSetting = () => {
     dispatch(showSetting());

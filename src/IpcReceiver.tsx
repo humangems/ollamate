@@ -23,7 +23,7 @@ export default function IpcReceiver() {
       window.ipcRenderer.removeAllListeners('leave-full-screen-message');
       window.ipcRenderer.removeAllListeners('import-note-message');
     }
-  }, [])
+  }, [dispatch])
 
   return null;
 }

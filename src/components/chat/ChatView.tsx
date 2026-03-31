@@ -29,7 +29,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   useEffect(() => {
     dispatch(getMessagesThunk(chat.id));
-  }, [chat.id]);
+  }, [chat.id, dispatch]);
 
   useEffect(() => {
     setInternalModel(chat.model);
@@ -52,7 +52,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
         model: internalModel,
       })
     );
-  }, [chat.id]);
+  }, [chat.id, chat.title, dispatch, internalModel, messages]);
 
   const handleModelChange = (value: string) => {
     if (!isNewChat) {

@@ -14,12 +14,13 @@ export default function CheckButton({ url }: { url: string }) {
       await instance.list();
       setStatus('success');
       alert('Connection successful!');
-    } catch (e: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       alert(
         `Failed to connect to the server\n\nAre you sure there is an ollama server running at ${url}?\n\n` +
-          e.message
+          message
       );
-      console.error(e);
+      console.error(error);
       setStatus('error');
     } finally {
       setChecking(false);

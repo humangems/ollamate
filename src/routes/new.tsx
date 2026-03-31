@@ -6,7 +6,7 @@ import { useAppSelector } from '../redux/store';
 import { selectDefaultModelForNewChat } from '../redux/slice/modelSlice';
 
 export default function NewPage() {
-  const [chatId, setChatId] = useState<string>();
+  const [chatId] = useState(() => nanoid());
 
   const newChatId = useAppSelector((state) => state.chats.newChatId);
   const navigate = useNavigate();
@@ -15,12 +15,8 @@ export default function NewPage() {
   useEffect(() => {
     if (newChatId && newChatId === chatId) {
       navigate(`/chat/${newChatId}`);
-    } else {
-      setChatId(nanoid());
     }
-  }, [newChatId]);
-
-  if (!chatId) return null;
+  }, [chatId, navigate, newChatId]);
 
   return (
     <div className="">

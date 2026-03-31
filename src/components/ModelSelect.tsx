@@ -28,7 +28,7 @@ export default function ModelSelect({ value, onChange }: ModelSelectProps) {
 
   useEffect(() => {
     dispatch(getAllModelsThunk());
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     setInternalValue(value);
