@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { PanelLeftIcon, PenBoxIcon } from 'lucide-react';
+import { CopyIcon, GlobeIcon, PanelLeftIcon, PenBoxIcon, RefreshCcwIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chat } from '../../lib/types';
@@ -22,15 +22,45 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
-import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
+import {
+  Message,
+  MessageAction,
+  MessageActions,
+  MessageContent,
+  MessageResponse,
+} from '@/components/ai-elements/message';
 import {
   PromptInput,
   type PromptInputMessage,
   PromptInputTextarea,
   PromptInputSubmit,
+  PromptInputActionAddAttachments,
+  PromptInputActionAddScreenshot,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
+  PromptInputBody,
+  PromptInputButton,
+  PromptInputFooter,
+  PromptInputHeader,
+  PromptInputSelect,
+  PromptInputSelectContent,
+  PromptInputSelectItem,
+  PromptInputSelectTrigger,
+  PromptInputSelectValue,
+  PromptInputTools,
+  usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
 import { MessageSquare } from 'lucide-react';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '../ai-elements/reasoning';
+import { Spinner } from '../ui/spinner';
+import {
+  Attachment,
+  AttachmentPreview,
+  AttachmentRemove,
+  Attachments,
+} from '../ai-elements/attachments';
+import { text } from 'stream/consumers';
 
 type ChatViewProps = {
   chat: Chat;
@@ -40,8 +70,16 @@ type ChatViewProps = {
 const agent = new ToolLoopAgent({
   model: ollama('glm-4.7:cloud'),
   instructions: 'You are a helpful assistant.',
-  tools: {},
+  tools: {
+    webSearch: ollama.tools.webSearch({}),
+    webFetch: ollama.tools.webFetch({}),
+  },
 });
+
+const models = [
+  { id: 'gpt-4o', name: 'GPT-4o' },
+  { id: 'claude-opus-4-20250514', name: 'Claude 4 Opus' },
+];
 
 const MessageParts = ({
   message,
@@ -74,7 +112,41 @@ const MessageParts = ({
 
         return null;
       })}
+
+      {message.role === 'assistant' && isLastMessage && (
+        <MessageActions>
+          <MessageAction onClick={() => regenerate()} label="Retry">
+            <RefreshCcwIcon className="size-3" />
+          </MessageAction>
+          <MessageAction onClick={() => navigator.clipboard.writeText(part.text)} label="Copy">
+            <CopyIcon className="size-3" />
+          </MessageAction>
+        </MessageActions>
+      )}
     </>
+  );
+};
+
+const PromptInputAttachmentsDisplay = () => {
+  const attachments = usePromptInputAttachments();
+  if (attachments.files.length === 0) {
+    return null;
+  }
+  return (
+    <PromptInputHeader>
+      <Attachments variant="inline">
+        {attachments.files.map((attachment) => (
+          <Attachment
+            data={attachment}
+            key={attachment.id}
+            onRemove={() => attachments.remove(attachment.id)}
+          >
+            <AttachmentPreview />
+            <AttachmentRemove />
+          </Attachment>
+        ))}
+      </Attachments>
+    </PromptInputHeader>
   );
 };
 
@@ -88,6 +160,8 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   const isStreaming = status === 'streaming';
 
   const [input, setInput] = useState('');
+  const [model, setModel] = useState<string>(models[0].id);
+  const [useWebSearch, setUseWebSearch] = useState<boolean>(false);
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
@@ -137,9 +211,9 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   };
 
   return (
-    <div className="flex flex-col relative h-full">
+    <div className="flex flex-col relative h-full overflow-hidden">
       <div
-        className={cn('bg-background h-[52px] flex items-center shrink-0 drag-region pl-4', {
+        className={cn('bg-background h-13 flex items-center shrink-0 drag-region pl-4', {
           'pl-20': sidebarState === 'collapsed',
         })}
       >
@@ -157,47 +231,42 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
         <ModelSelect value={activeModel} onChange={handleModelChange} />
       </div>
 
-      <hr />
-
-      <div className="flex flex-col h-full">
-        <Conversation>
-          <ConversationContent>
-            {messages.length === 0 ? (
-              <ConversationEmptyState
-                icon={<MessageSquare className="size-12" />}
-                title="Start a conversation"
-                description="Type a message below to begin chatting"
-              />
-            ) : (
-              messages.map((message, index) => (
-                <Message from={message.role} key={message.id}>
-                  <MessageContent>
-                    <MessageParts
-                      message={message}
-                      isLastMessage={index === messages.length - 1}
-                      isStreaming={isStreaming}
-                    />
-                  </MessageContent>
-                </Message>
-              ))
-            )}
-          </ConversationContent>
-          <ConversationDownload messages={messages} />
-          <ConversationScrollButton />
-        </Conversation>
-        <PromptInput onSubmit={handleSubmit} className="mt-4 w-full max-w-2xl mx-auto relative">
-          <PromptInputTextarea
-            value={input}
-            placeholder="Say something..."
-            onChange={(e) => setInput(e.currentTarget.value)}
-            className="pr-12"
-          />
-          <PromptInputSubmit
-            status={status === 'streaming' ? 'streaming' : 'ready'}
-            disabled={!input.trim()}
-            className="absolute bottom-1 right-1"
-          />
-        </PromptInput>
+      <div className="flex-1 h-full bg-red-50 overflow-y-auto">
+        <div className="w-full mx-auto">
+          <Conversation>
+            <ConversationContent>
+              {messages.length === 0 ? (
+                <ConversationEmptyState
+                  icon={<MessageSquare className="size-12" />}
+                  title="Start a conversation"
+                  description="Type a message below to begin chatting"
+                />
+              ) : (
+                messages.map((message, index) => (
+                  <Message from={message.role} key={message.id}>
+                    <MessageContent>
+                      <MessageParts
+                        message={message}
+                        isLastMessage={index === messages.length - 1}
+                        isStreaming={isStreaming}
+                      />
+                    </MessageContent>
+                  </Message>
+                ))
+              )}
+              {(status === 'submitted' || status === 'streaming') && (
+                <div>
+                  {status === 'submitted' && <Spinner />}
+                  <button type="button" onClick={() => stop()}>
+                    Stop
+                  </button>
+                </div>
+              )}
+            </ConversationContent>
+            <ConversationDownload messages={messages} />
+            <ConversationScrollButton />
+          </Conversation>
+        </div>
       </div>
 
       {/* <hr />
@@ -209,6 +278,55 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
       <div className="absolute bottom-6 left-0 right-0">
         <MessageInput chatId={chat.id} model={activeModel} isNewChat={isNewChat} />
       </div> */}
+
+      <div className="absolute bottom-6 left-0 right-0">
+        <div className="mx-auto w-full max-w-3xl px-4 bg-background">
+          <PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
+            <PromptInputAttachmentsDisplay />
+
+            <PromptInputBody>
+              <PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
+            </PromptInputBody>
+            <PromptInputFooter>
+              <PromptInputTools>
+                <PromptInputActionMenu>
+                  <PromptInputActionMenuTrigger />
+                  <PromptInputActionMenuContent>
+                    <PromptInputActionAddAttachments />
+                    <PromptInputActionAddScreenshot />
+                  </PromptInputActionMenuContent>
+                </PromptInputActionMenu>
+                <PromptInputButton
+                  onClick={() => setUseWebSearch(!useWebSearch)}
+                  tooltip={{ content: 'Search the web', shortcut: '⌘K' }}
+                  variant={useWebSearch ? 'default' : 'ghost'}
+                >
+                  <GlobeIcon size={16} />
+                  <span>Search</span>
+                </PromptInputButton>
+                <PromptInputSelect
+                  onValueChange={(value) => {
+                    setModel(value);
+                  }}
+                  value={model}
+                >
+                  <PromptInputSelectTrigger>
+                    <PromptInputSelectValue />
+                  </PromptInputSelectTrigger>
+                  <PromptInputSelectContent>
+                    {models.map((model) => (
+                      <PromptInputSelectItem key={model.id} value={model.id}>
+                        {model.name}
+                      </PromptInputSelectItem>
+                    ))}
+                  </PromptInputSelectContent>
+                </PromptInputSelect>
+              </PromptInputTools>
+              <PromptInputSubmit disabled={!text && !status} status={status} />
+            </PromptInputFooter>
+          </PromptInput>
+        </div>
+      </div>
     </div>
   );
 }

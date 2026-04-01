@@ -19,7 +19,7 @@ export default function NewPage() {
   }, [chatId, navigate, newChatId]);
 
   return (
-    <div className="">
+    <div className="h-full">
       <ChatView chat={{ id: chatId, model: model }} isNewChat={true} />
     </div>
   );
