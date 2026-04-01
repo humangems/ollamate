@@ -68,7 +68,8 @@ type ChatViewProps = {
 };
 
 const agent = new ToolLoopAgent({
-  model: ollama('glm-4.7:cloud'),
+  model: ollama('qwen3.5:0.8b', { think: true }),
+  // model: ollama('glm-4.7:cloud'),
   instructions: 'You are a helpful assistant.',
   tools: {
     webSearch: ollama.tools.webSearch({}),
@@ -97,6 +98,8 @@ const MessageParts = ({
   // Check if reasoning is still streaming (last part is reasoning on last message)
   const lastPart = message.parts.at(-1);
   const isReasoningStreaming = isLastMessage && isStreaming && lastPart?.type === 'reasoning';
+
+  console.log(message);
   return (
     <>
       {hasReasoning && (
