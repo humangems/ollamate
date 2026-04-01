@@ -1,4 +1,4 @@
-import { useDocumentTitle } from '@mantine/hooks';
+import { useEffect } from 'react';
 import { getAllNotes } from '../lib/rxdb';
 
 export async function loader() {
@@ -9,7 +9,9 @@ export async function loader() {
 }
 
 export default function IndexPage() {
-  useDocumentTitle('Flow');
+  useEffect(() => {
+    document.title = 'Flow';
+  }, []);
 
   return (
     <div className="mx-auto w-[600px]">

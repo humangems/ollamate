@@ -8,6 +8,7 @@ import { Model } from '../../lib/types';
 import getOllama from '../../lib/ollamaApi';
 import { getLastUsedModel, setLastUsedModel } from '../../lib/settingApi';
 import { RootState } from '../store';
+import { toast } from 'sonner';
 
 const modelAdapter = createEntityAdapter<Model, string>({
   selectId: (model) => model.name,
@@ -42,7 +43,9 @@ export const getAllModelsThunk = createAsyncThunk<Model[]>(
     try {
       response = await ollamaInstance.list();
     } catch (error) {
-      alert(`Failed to fetch models\n\n${error}`);
+      toast.error('Failed to fetch models.', {
+        description: error instanceof Error ? error.message : String(error),
+      });
     }
 
     if (!response) return [];

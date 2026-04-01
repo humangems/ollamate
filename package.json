@@ -17,6 +17,8 @@
     "publish-arm64": "electron-forge publish --arch=arm64"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.144",
+    "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-dropdown-menu": "2.1.16",
     "@radix-ui/react-label": "2.1.8",
@@ -29,6 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "11.0.2",
+    "sonner": "^2.0.7",
     "tailwind-merge": "3.5.0",
     "zod": "^4.3.6"
   },
@@ -45,8 +48,6 @@
     "@electron/fuses": "^2.1.1",
     "@eslint/eslintrc": "3.3.5",
     "@eslint/js": "10.0.1",
-    "@mantine/form": "8.3.18",
-    "@mantine/hooks": "8.3.18",
     "@reduxjs/toolkit": "2.11.2",
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.2.2",

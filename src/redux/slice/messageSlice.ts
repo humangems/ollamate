@@ -13,6 +13,7 @@ import { addMessage, getMessagesByChatId } from '../../lib/messageApi';
 import { getOllamaProvider } from '../../lib/ollamaApi';
 import { Chat, Message } from '../../lib/types';
 import { RootState } from '../store';
+import { toast } from 'sonner';
 
 const messageAdapter = createEntityAdapter<Message>({
   sortComparer: (a, b) => a.created_at! - b.created_at!,
@@ -219,7 +220,9 @@ export const llmChatThunk = createAsyncThunk<void, NewMessagePayloadType>(
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       thunkAPI.dispatch(streamAbort({ messageId }));
-      alert(`Error occurred while chatting with the model: ${payload.model}\n\n${message}`);
+      toast.error(`Chat failed for ${payload.model}.`, {
+        description: message,
+      });
     }
   }
 );

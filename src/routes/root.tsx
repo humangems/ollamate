@@ -1,5 +1,6 @@
 import { AppSidebar } from '@/components/sidebar/AppSidebar';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
@@ -20,12 +21,13 @@ export default function RootPage() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <SidebarProvider>
         <AppSidebar />
-        <main className=" w-full">
+        <main className="w-full min-h-svh bg-background">
           <Outlet />
         </main>
         <SettingDialog />
         <RenameDialog />
         <Hotkeys />
+        <Toaster richColors position="top-right" />
       </SidebarProvider>
     </ThemeProvider>
   );
