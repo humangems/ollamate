@@ -1,17 +1,16 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "radix-maia",
+  "style": "new-york",
   "rsc": false,
   "tsx": true,
   "tailwind": {
     "config": "tailwind.config.js",
     "css": "src/index.css",
-    "baseColor": "stone",
+    "baseColor": "neutral",
     "cssVariables": true,
     "prefix": ""
   },
-  "iconLibrary": "tabler",
-  "rtl": false,
+  "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
@@ -19,8 +18,6 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "menuColor": "default-translucent",
-  "menuAccent": "subtle",
   "registries": {
     "@ai-elements": "https://ai-sdk.dev/elements/api/registry/{name}.json"
   }

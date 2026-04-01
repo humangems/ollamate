@@ -107,7 +107,11 @@ const MessageParts = ({
       )}
       {message.parts.map((part, i) => {
         if (part.type === 'text') {
-          return <MessageResponse key={`${message.id}-${i}`}>{part.text}</MessageResponse>;
+          return (
+            <MessageResponse className="text-base" key={`${message.id}-${i}`}>
+              {part.text}
+            </MessageResponse>
+          );
         }
 
         return null;
@@ -154,7 +158,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   // const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
 
   const { messages, sendMessage, status, stop } = useChat({
-    transport: new DirectChatTransport({ agent }),
+    transport: new DirectChatTransport({ agent, sendReasoning: true }),
   });
 
   const isStreaming = status === 'streaming';
@@ -228,11 +232,16 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
           </>
         )}
 
-        <ModelSelect value={activeModel} onChange={handleModelChange} />
+        <div className="flex items-center justify-between flex-1">
+          <ModelSelect value={activeModel} onChange={handleModelChange} />
+          <div className="no-drag-region pr-4">
+            <ConversationDownload messages={messages} className="p-0 static" />
+          </div>
+        </div>
       </div>
 
-      <div className="flex-1 h-full bg-red-50 overflow-y-auto">
-        <div className="w-full mx-auto">
+      <div className="flex-1 max-h-[calc(100vh-52px)]  overflow-y-auto">
+        <div className="w-full max-w-3xl pb-64 mx-auto">
           <Conversation>
             <ConversationContent>
               {messages.length === 0 ? (
@@ -263,7 +272,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
                 </div>
               )}
             </ConversationContent>
-            <ConversationDownload messages={messages} />
+            {/* <ConversationDownload messages={messages} /> */}
             <ConversationScrollButton />
           </Conversation>
         </div>
@@ -280,11 +289,11 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
       </div> */}
 
       <div className="absolute bottom-6 left-0 right-0">
-        <div className="mx-auto w-full max-w-3xl px-4 bg-background">
-          <PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
+        <div className="mx-auto w-full max-w-3xl px-4 ">
+          <PromptInput onSubmit={handleSubmit} globalDrop multiple className="bg-background">
             <PromptInputAttachmentsDisplay />
 
-            <PromptInputBody>
+            <PromptInputBody className="">
               <PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
             </PromptInputBody>
             <PromptInputFooter>
