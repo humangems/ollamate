@@ -23,12 +23,14 @@ const chatProcedure = router({
   chatList: publicProcedure.query(() => dbService.getAllChats()),
 
   createChat: publicProcedure
-    .input(z.object({
-      id: z.string(),
-      model: z.string(),
-      title: z.string().optional(),
-      created_at: z.number().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.string(),
+        model: z.string(),
+        title: z.string().optional(),
+        created_at: z.number().optional(),
+      }),
+    )
     .mutation(({ input }) => dbService.upsertChat(input)),
 
   updateChat: publicProcedure
@@ -48,21 +50,26 @@ const chatProcedure = router({
     .mutation(({ input }) => dbService.addMessage(input)),
 
   generateTitle: publicProcedure
-    .input(z.object({
-      chatId: z.string(),
-      model: z.string(),
-      messages: z.array(z.object({ role: z.string(), content: z.string() })),
-    }))
+    .input(
+      z.object({
+        chatId: z.string(),
+        model: z.string(),
+        messages: z.array(z.object({ role: z.string(), content: z.string() })),
+      }),
+    )
     .mutation(async ({ input }) => {
       const { chatId, model, messages } = input;
 
-      const ollamaConfig = settingStore.get('ollamaServer') as { custom: boolean; url: string } | undefined;
+      const ollamaConfig = settingStore.get('ollamaServer') as
+        | { custom: boolean; url: string }
+        | undefined;
       const baseURL = ollamaConfig?.url ?? 'http://127.0.0.1:11434';
       const provider = createOllama({ baseURL });
 
       const instruction = {
         role: 'user' as const,
-        content: 'Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language.',
+        content:
+          'Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language.',
       };
 
       const aiMessages = [
@@ -88,7 +95,7 @@ const chatProcedure = router({
         chatId: z.string(),
         model: z.string(),
         userMessage: z.string(),
-      })
+      }),
     )
     .subscription(async function* ({ input }) {
       const { chatId, model, userMessage } = input;
@@ -120,12 +127,14 @@ const chatProcedure = router({
       ];
 
       // Get Ollama server config
-      const ollamaConfig = settingStore.get('ollamaServer') as { custom: boolean; url: string } | undefined;
+      const ollamaConfig = settingStore.get('ollamaServer') as
+        | { custom: boolean; url: string }
+        | undefined;
       const baseURL = ollamaConfig?.url ?? 'http://127.0.0.1:11434';
       const provider = createOllama({ baseURL });
 
       const result = streamText({
-        model: provider(model),
+        model: provider(model, { think: true }),
         system: 'You are a helpful assistant.',
         messages: aiMessages,
       });
