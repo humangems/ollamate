@@ -58,6 +58,7 @@ import {
   Attachments,
 } from '../ai-elements/attachments';
 import { Message as DbMessage } from '../../lib/types';
+import { extractReasoning } from '../../lib/reasoningHelper';
 
 type ChatViewProps = {
   chat: Chat;
@@ -65,10 +66,25 @@ type ChatViewProps = {
 };
 
 function toUIMessage(msg: DbMessage): UIMessage {
+  if (msg.role !== 'assistant') {
+    return {
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      parts: [{ type: 'text', text: msg.content }],
+    };
+  }
+
+  const [reasoning, content] = extractReasoning(msg.content);
+  const parts: UIMessage['parts'] = [];
+  if (reasoning.length > 0) {
+    parts.push({ type: 'reasoning', text: reasoning, providerMetadata: {} });
+  }
+  parts.push({ type: 'text', text: content });
+
   return {
     id: msg.id,
-    role: msg.role as 'user' | 'assistant',
-    parts: [{ type: 'text', text: msg.content }],
+    role: 'assistant',
+    parts,
   };
 }
 

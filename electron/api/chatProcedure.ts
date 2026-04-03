@@ -139,16 +139,17 @@ const chatProcedure = router({
         messages: aiMessages,
       });
 
-      let fullContent = '';
+      let reasoningContent = '';
+      let textContent = '';
 
       for await (const part of result.fullStream) {
         if (part.type === 'text-delta') {
-          fullContent += part.text;
+          textContent += part.text;
           yield { type: 'text-delta' as const, text: part.text };
         } else if (part.type === 'reasoning-start') {
           yield { type: 'reasoning-start' as const };
         } else if (part.type === 'reasoning-delta') {
-          fullContent += part.text;
+          reasoningContent += part.text;
           yield { type: 'reasoning-delta' as const, text: part.text };
         } else if (part.type === 'reasoning-end') {
           yield { type: 'reasoning-end' as const };
@@ -157,13 +158,17 @@ const chatProcedure = router({
         }
       }
 
+      const storedContent = reasoningContent
+        ? `<think>${reasoningContent}</think>${textContent}`
+        : textContent;
+
       // Persist completed assistant message
       const usage = await result.usage;
       await dbService.addMessage({
         id: uuidv7(),
         chat_id: chatId,
         role: 'assistant',
-        content: fullContent,
+        content: storedContent,
         model,
         eval_count: usage.outputTokens ?? undefined,
         created_at: Date.now(),
