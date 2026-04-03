@@ -3,7 +3,11 @@ import { CopyIcon, GlobeIcon, PanelLeftIcon, PenBoxIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chat } from '../../lib/types';
-import { generateTitleThunk, updateModelThunk, getAllChatsThunk } from '../../redux/slice/chatSlice';
+import {
+  generateTitleThunk,
+  updateModelThunk,
+  getAllChatsThunk,
+} from '../../redux/slice/chatSlice';
 import { getMessagesThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
 import ModelSelect from '../ModelSelect';
@@ -99,10 +103,7 @@ const MessageParts = ({
   // collapsing submitted→streaming into a single React render batch.
   // If the transport is replaced with one that delays these chunks, revisit this.
   const isLoadingState =
-    message.role === 'assistant' &&
-    isLastMessage &&
-    isStreaming &&
-    !hasVisibleContent;
+    message.role === 'assistant' && isLastMessage && isStreaming && !hasVisibleContent;
 
   if (isLoadingState) {
     return (
@@ -182,14 +183,14 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   // Load historical messages from Redux (populated from SQLite via tRPC)
   const historicalMessages = useAppSelector((state: RootState) =>
-    selectMessagesByChatId(state, chat.id)
+    selectMessagesByChatId(state, chat.id),
   );
 
   // Create tRPC-backed transport, recreated when chatId or model changes
   const transport = useMemo(
     () => createTRPCChatTransport(chat.id, activeModel),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [chat.id, activeModel]
+    [chat.id, activeModel],
   );
 
   const { messages, sendMessage, status, stop, regenerate, error } = useChat({
@@ -199,12 +200,11 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
       if (isNewChat) {
         // Wait for both thunks before navigating so historicalMessages is populated
         // when the new ChatView mounts (useChat only uses messages prop as initial value)
-        Promise.all([
-          dispatch(getMessagesThunk(chat.id)),
-          dispatch(getAllChatsThunk()),
-        ]).then(() => {
-          navigate(`/chat/${chat.id}`);
-        });
+        Promise.all([dispatch(getMessagesThunk(chat.id)), dispatch(getAllChatsThunk())]).then(
+          () => {
+            navigate(`/chat/${chat.id}`);
+          },
+        );
       } else {
         dispatch(getMessagesThunk(chat.id));
         dispatch(getAllChatsThunk());
@@ -234,7 +234,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
             .join(''),
         })),
         model: activeModel,
-      })
+      }),
     );
   }, [activeModel, chat.id, chat.title, dispatch, messages]);
 
@@ -307,9 +307,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
                   </Message>
                 ))
               )}
-              {error && (
-                <div className="text-destructive text-sm px-2 py-1">{error.message}</div>
-              )}
+              {error && <div className="text-destructive text-sm px-2 py-1">{error.message}</div>}
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>
