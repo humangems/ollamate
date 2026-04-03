@@ -175,13 +175,18 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
     transport,
     messages: historicalMessages.map(toUIMessage),
     onFinish: () => {
-      // Refresh message cache from SQLite
-      dispatch(getMessagesThunk(chat.id));
-      // Refresh chat list to show new/updated chat in sidebar
-      dispatch(getAllChatsThunk());
-      // Navigate new chats to their permanent route
       if (isNewChat) {
-        navigate(`/chat/${chat.id}`);
+        // Wait for both thunks before navigating so historicalMessages is populated
+        // when the new ChatView mounts (useChat only uses messages prop as initial value)
+        Promise.all([
+          dispatch(getMessagesThunk(chat.id)),
+          dispatch(getAllChatsThunk()),
+        ]).then(() => {
+          navigate(`/chat/${chat.id}`);
+        });
+      } else {
+        dispatch(getMessagesThunk(chat.id));
+        dispatch(getAllChatsThunk());
       }
     },
   });

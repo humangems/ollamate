@@ -1,8 +1,5 @@
-import { generateText } from 'ai';
 import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import { deleteChat, getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
-import { getOllamaProvider } from '../../lib/ollamaApi';
-import { toModelMessages } from '../../lib/aiSdk';
+import { deleteChat, generateChatTitle, getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
 import { Chat } from '../../lib/types';
 
 const chatAdapter = createEntityAdapter<Chat>({
@@ -81,27 +78,7 @@ type GeneratedTitle = {
 export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitlePayload>(
   'chats/generateTitle',
   async (payload, _thunkAPI) => {
-    const instruction = {
-      role: 'user',
-      content:
-        'Generate a title for the conversation, no more than 6 words. return just the title, no quotes. The generated title language should be exactly same as the conversation language.',
-    };
-
-    const ollamaProvider = await getOllamaProvider();
-
-    const { text } = await generateText({
-      model: ollamaProvider(payload.model),
-      messages: toModelMessages([...payload.messages, instruction]),
-    });
-
-    const title = text.trim();
-
-    await updateChatTitle(payload.chatId, title);
-
-    return {
-      chatId: payload.chatId,
-      title,
-    };
+    return generateChatTitle(payload.chatId, payload.model, payload.messages);
   }
 );
 

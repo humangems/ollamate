@@ -29,3 +29,7 @@ export async function updateChatModel(chatId: string, model: string): Promise<Ch
 export async function deleteChat(chatId: string): Promise<void> {
   await trpcClient.chat.deleteChat.mutate({ id: chatId });
 }
+
+export async function generateChatTitle(chatId: string, model: string, messages: { role: string; content: string }[]): Promise<{ chatId: string; title: string }> {
+  return trpcClient.chat.generateTitle.mutate({ chatId, model, messages });
+}
