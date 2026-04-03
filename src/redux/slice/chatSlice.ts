@@ -3,62 +3,36 @@ import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } fro
 import { deleteChat, getAllChats, updateChatModel, updateChatTitle } from '../../lib/chatApi';
 import { getOllamaProvider } from '../../lib/ollamaApi';
 import { toModelMessages } from '../../lib/aiSdk';
-import { Chat, Model } from '../../lib/types';
-import { llmChatThunk, streamEnd } from './messageSlice';
-
-type InitialState = {
-  newChatId: string | null;
-  isStreaming: Record<string, boolean>;
-};
-
-const initialState : InitialState = {
-  newChatId: null,
-  isStreaming: {},
-}
+import { Chat } from '../../lib/types';
 
 const chatAdapter = createEntityAdapter<Chat>({
-  sortComparer: (a, b) => b.created_at! - a.created_at!,
+  sortComparer: (a, b) => (b.created_at ?? 0) - (a.created_at ?? 0),
 });
 
 export const chatSlice = createSlice({
   name: 'chats',
-  initialState: chatAdapter.getInitialState(initialState),
+  initialState: chatAdapter.getInitialState(),
   reducers: {
     allChatsLoaded: chatAdapter.setAll,
     chatRemoved: chatAdapter.removeOne,
     chatUpdated: chatAdapter.updateOne,
+    chatUpserted: chatAdapter.upsertOne,
   },
 
   extraReducers: (builder) => {
     builder
-      .addCase(streamEnd, (state, action) => {
-        const chat: Chat = {
-          id: action.payload.chatId,
-          model: action.payload.model,
-        };
-        if (action.payload.isNewChat) {
-          state.newChatId = action.payload.chatId;
-          chat.created_at = action.payload.chatCreatedAt;
-        }
-        chatAdapter.upsertOne(state, chat);
-      })
       .addCase(generateTitleThunk.fulfilled, (state, action: PayloadAction<GeneratedTitle>) => {
-        state.entities[action.payload.chatId].title = action.payload.title;
+        const entity = state.entities[action.payload.chatId];
+        if (entity) entity.title = action.payload.title;
       })
       .addCase(updateModelThunk.fulfilled, (state, action: PayloadAction<Chat>) => {
-        state.entities[action.payload.id].model = action.payload.model;
-      })
-      .addCase(llmChatThunk.pending, (state, action) => {
-        state.isStreaming[action.meta.arg.chatId] = true;
-      }).addCase(llmChatThunk.fulfilled, (state, action) => {
-        state.isStreaming[action.meta.arg.chatId] = false;
-      }).addCase(llmChatThunk.rejected, (state, action) => {
-        state.isStreaming[action.meta.arg.chatId] = false;
-      })
+        const entity = state.entities[action.payload.id];
+        if (entity) entity.model = action.payload.model;
+      });
   }
 });
 
-export const getAllChatsThunk = createAsyncThunk<Model[]>(
+export const getAllChatsThunk = createAsyncThunk<Chat[]>(
   'chats/getAllChats',
   async (_payload, thunkAPI) => {
     const response = await getAllChats();
@@ -78,7 +52,7 @@ export const deleteChatThunk = createAsyncThunk<void, string>(
 type UpdateChatTitlePayload = {
   chatId: string;
   title: string;
-}
+};
 
 export const updateChatTitleThunk = createAsyncThunk<void, UpdateChatTitlePayload>(
   'chats/updateChatTitle',
@@ -88,22 +62,21 @@ export const updateChatTitleThunk = createAsyncThunk<void, UpdateChatTitlePayloa
   }
 );
 
-
 type SimpleChatMessage = {
   role: string;
   content: string;
-}
+};
 
 type GenerateTitlePayload = {
   chatId: string;
   model: string;
-  messages: SimpleChatMessage[]
-}
+  messages: SimpleChatMessage[];
+};
 
 type GeneratedTitle = {
   chatId: string;
   title: string;
-}
+};
 
 export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitlePayload>(
   'chats/generateTitle',
@@ -135,21 +108,18 @@ export const generateTitleThunk = createAsyncThunk<GeneratedTitle, GenerateTitle
 type UpdateModelPayload = {
   chatId: string;
   model: string;
-}
+};
 
 export const updateModelThunk = createAsyncThunk<Chat, UpdateModelPayload>(
   'chats/updateModel',
   async (payload, _thunkAPI) => {
-
     const chat = await updateChatModel(payload.chatId, payload.model);
     return chat;
   }
 );
 
-
 export const chatSelectors = chatAdapter.getSelectors();
 
-// Action creators are generated for each case reducer function
-export const { allChatsLoaded, chatRemoved, chatUpdated } = chatSlice.actions;
+export const { allChatsLoaded, chatRemoved, chatUpdated, chatUpserted } = chatSlice.actions;
 
 export default chatSlice.reducer;

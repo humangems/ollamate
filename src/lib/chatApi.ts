@@ -1,60 +1,31 @@
-import { collections } from "./rxdb";
-import { Chat } from "./types";
+import { trpcClient } from './trpc';
+import { Chat } from './types';
 
-export async function getAllChats() {
-  const result = await collections.chats
-    .find({
-      sort: [{ created_at: 'desc' }],
-    })
-    .exec();
-
-  return result.map((doc) => doc.toJSON());
+export async function getAllChats(): Promise<Chat[]> {
+  const result = await trpcClient.chat.chatList.query();
+  return result as Chat[];
 }
 
-export async function upsertChat(chat: Chat) {
-  const loaded = await collections.chats.findOne(chat.id).exec();
-  if (!loaded) {
-    const created = { ...chat, updated_at: Date.now() };
-    const newObj = await collections.chats.insert(created);
-    return newObj.toJSON();
-  } else {
-    const updated = { ...chat, updated_at: Date.now() };
-    await loaded.patch(updated);
-    return loaded.toJSON();
-  }
-}
-
-export async function updateChatTitle(chatId: string, title: string) {
-  const loaded = await collections.chats.findOne(chatId).exec();
-
-  if (loaded) {
-    const newObj = await loaded.patch({title});
-    return newObj.toJSON();
-  }
-}
-
-export async function updateChatModel(chatId: string, model: string) {
-  const loaded = await collections.chats.findOne(chatId).exec();
-
-  if (loaded) {
-    const newObj = await loaded.patch({ model: model });
-    return newObj.toJSON();
-  }
-}
-
-export async function deleteChat(chatId: string) {
-  const loaded = await collections.chats.findOne(chatId).exec();
-  const relatedMessages = collections.messages.find({
-    selector: {
-      chat_id: {
-        $eq: chatId,
-      },
-    },
+export async function upsertChat(chat: Chat): Promise<Chat> {
+  const result = await trpcClient.chat.createChat.mutate({
+    id: chat.id,
+    model: chat.model,
+    title: chat.title,
+    created_at: chat.created_at,
   });
+  return result as Chat;
+}
 
-  if (loaded) {
-    await loaded.remove();
-    await relatedMessages.remove();
-    return chatId;
-  }
+export async function updateChatTitle(chatId: string, title: string): Promise<Chat> {
+  const result = await trpcClient.chat.updateChat.mutate({ id: chatId, title });
+  return result as Chat;
+}
+
+export async function updateChatModel(chatId: string, model: string): Promise<Chat> {
+  const result = await trpcClient.chat.updateChat.mutate({ id: chatId, model });
+  return result as Chat;
+}
+
+export async function deleteChat(chatId: string): Promise<void> {
+  await trpcClient.chat.deleteChat.mutate({ id: chatId });
 }

@@ -1,7 +1,13 @@
-import { ipcRenderer, contextBridge } from 'electron'
+import { ipcRenderer, contextBridge } from 'electron';
+// @ts-ignore
+import { exposeElectronTRPC } from 'electron-trpc-experimental/preload';
 
+// Expose tRPC bridge (uses window.electronTRPC namespace)
+process.once('loaded', () => {
+  exposeElectronTRPC();
+});
 
-// --------- Expose some API to the Renderer process ---------
+// Keep legacy ipcRenderer bridge for settings IPC and fullscreen events
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
     const [channel, listener] = args;
@@ -19,12 +25,8 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args;
     return ipcRenderer.invoke(channel, ...omit);
   },
-
   removeAllListeners(...args: Parameters<typeof ipcRenderer.removeAllListeners>) {
     const [channel] = args;
     return ipcRenderer.removeAllListeners(channel);
-  }
-
-  // You can expose other APTs you need here.
-  // ...
+  },
 });

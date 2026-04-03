@@ -4,6 +4,7 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 module.exports = {
   packagerConfig: {
     asar: true,
+    extraResource: ['drizzle'],
     osxSign: {},
     osxNotarize: {
       tool: 'notarytool',
@@ -14,7 +15,9 @@ module.exports = {
     icon: 'public/icon',
     name: "Ollamate"
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    extraModules: ['better-sqlite3'],
+  },
   makers: [
     {
       name: '@electron-forge/maker-squirrel',

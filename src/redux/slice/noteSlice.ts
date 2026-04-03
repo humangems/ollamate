@@ -29,11 +29,11 @@ export const upsertNoteThunk = createAsyncThunk<Note, Note>(
   }
 );
 
-export const getNoteThunk = createAsyncThunk<Note, string>(
+export const getNoteThunk = createAsyncThunk<Note | undefined, string>(
   'notes/getNote',
   async (payload, thunkAPI) => {
     const response = await getNote(payload);
-    thunkAPI.dispatch(noteLoaded(response));
+    if (response) thunkAPI.dispatch(noteLoaded(response));
     return response;
   }
 );

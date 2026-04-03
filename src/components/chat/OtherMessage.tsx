@@ -6,13 +6,12 @@ import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Message } from '../../lib/types';
-import { useAppSelector } from '../../redux/store';
 // import OllamaIcon from '../icons/Ollama';
 import CopyButton from './CopyButton';
 import { extractReasoning } from '../../lib/reasoningHelper';
 
 export default function OtherMessage({ message }: { message: Message }) {
-  const isStreaming = useAppSelector((state) => state.messages.isStreaming[message.id]);
+  const isStreaming = false;
 
   const [thinking, content] = extractReasoning(message.content);
 

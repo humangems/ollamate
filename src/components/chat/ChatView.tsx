@@ -1,19 +1,17 @@
 import { cn } from '@/lib/utils';
-import { CopyIcon, GlobeIcon, PanelLeftIcon, PenBoxIcon, RefreshCcwIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { CopyIcon, GlobeIcon, PanelLeftIcon, PenBoxIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chat } from '../../lib/types';
-import { generateTitleThunk, updateModelThunk } from '../../redux/slice/chatSlice';
+import { generateTitleThunk, updateModelThunk, getAllChatsThunk } from '../../redux/slice/chatSlice';
 import { getMessagesThunk, selectMessagesByChatId } from '../../redux/slice/messageSlice';
 import { RootState, useAppDispatch, useAppSelector } from '../../redux/store';
 import ModelSelect from '../ModelSelect';
 import { Button } from '../ui/button';
 import { useSidebar } from '../ui/sidebar';
-import MessageHistory from './MessageHistory';
-import MessageInput from './MessageInput';
 import { useChat } from '@ai-sdk/react';
-import { DirectChatTransport, ToolLoopAgent, UIMessage } from 'ai';
-import { ollama } from 'ai-sdk-ollama';
+import type { UIMessage } from 'ai';
+import { createTRPCChatTransport } from '@/lib/trpcChatTransport';
 
 import {
   Conversation,
@@ -43,11 +41,6 @@ import {
   PromptInputButton,
   PromptInputFooter,
   PromptInputHeader,
-  PromptInputSelect,
-  PromptInputSelectContent,
-  PromptInputSelectItem,
-  PromptInputSelectTrigger,
-  PromptInputSelectValue,
   PromptInputTools,
   usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
@@ -60,46 +53,45 @@ import {
   AttachmentRemove,
   Attachments,
 } from '../ai-elements/attachments';
-import { text } from 'stream/consumers';
+import { Message as DbMessage } from '../../lib/types';
 
 type ChatViewProps = {
   chat: Chat;
   isNewChat: boolean;
 };
 
-const agent = new ToolLoopAgent({
-  model: ollama('qwen3.5:0.8b', { think: true }),
-  // model: ollama('glm-4.7:cloud'),
-  instructions: 'You are a helpful assistant.',
-  tools: {
-    webSearch: ollama.tools.webSearch({}),
-    webFetch: ollama.tools.webFetch({}),
-  },
-});
-
-const models = [
-  { id: 'gpt-4o', name: 'GPT-4o' },
-  { id: 'claude-opus-4-20250514', name: 'Claude 4 Opus' },
-];
+function toUIMessage(msg: DbMessage): UIMessage {
+  return {
+    id: msg.id,
+    role: msg.role as 'user' | 'assistant',
+    parts: [{ type: 'text', text: msg.content }],
+  };
+}
 
 const MessageParts = ({
   message,
   isLastMessage,
   isStreaming,
+  onRegenerate,
 }: {
   message: UIMessage;
   isLastMessage: boolean;
   isStreaming: boolean;
+  onRegenerate: () => void;
 }) => {
-  // Consolidate all reasoning parts into one block
   const reasoningParts = message.parts.filter((part) => part.type === 'reasoning');
-  const reasoningText = reasoningParts.map((part) => part.text).join('\n\n');
+  const reasoningText = reasoningParts
+    .map((part) => (part.type === 'reasoning' ? part.text : ''))
+    .join('\n\n');
   const hasReasoning = reasoningParts.length > 0;
-  // Check if reasoning is still streaming (last part is reasoning on last message)
-  const lastPart = message.parts.at(-1);
+  const lastPart = message.parts[message.parts.length - 1];
   const isReasoningStreaming = isLastMessage && isStreaming && lastPart?.type === 'reasoning';
 
-  console.log(message);
+  const fullText = message.parts
+    .filter((p) => p.type === 'text')
+    .map((p) => (p.type === 'text' ? p.text : ''))
+    .join('');
+
   return (
     <>
       {hasReasoning && (
@@ -116,16 +108,15 @@ const MessageParts = ({
             </MessageResponse>
           );
         }
-
         return null;
       })}
 
       {message.role === 'assistant' && isLastMessage && (
         <MessageActions>
-          <MessageAction onClick={() => regenerate()} label="Retry">
-            <RefreshCcwIcon className="size-3" />
+          <MessageAction onClick={onRegenerate} label="Retry">
+            {/* RefreshCcwIcon */}
           </MessageAction>
-          <MessageAction onClick={() => navigator.clipboard.writeText(part.text)} label="Copy">
+          <MessageAction onClick={() => navigator.clipboard.writeText(fullText)} label="Copy">
             <CopyIcon className="size-3" />
           </MessageAction>
         </MessageActions>
@@ -158,17 +149,68 @@ const PromptInputAttachmentsDisplay = () => {
 };
 
 export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
-  // const messages = useAppSelector((state: RootState) => selectMessagesByChatId(state, chat.id));
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { state: sidebarState, toggleSidebar } = useSidebar();
 
-  const { messages, sendMessage, status, stop } = useChat({
-    transport: new DirectChatTransport({ agent, sendReasoning: true }),
+  const [internalModel, setInternalModel] = useState(chat.model);
+  const [useWebSearch, setUseWebSearch] = useState<boolean>(false);
+  const [input, setInput] = useState('');
+
+  const activeModel = isNewChat ? internalModel : chat.model;
+
+  // Load historical messages from Redux (populated from SQLite via tRPC)
+  const historicalMessages = useAppSelector((state: RootState) =>
+    selectMessagesByChatId(state, chat.id)
+  );
+
+  // Create tRPC-backed transport, recreated when chatId or model changes
+  const transport = useMemo(
+    () => createTRPCChatTransport(chat.id, activeModel),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [chat.id, activeModel]
+  );
+
+  const { messages, sendMessage, status, stop, regenerate } = useChat({
+    transport,
+    messages: historicalMessages.map(toUIMessage),
+    onFinish: () => {
+      // Refresh message cache from SQLite
+      dispatch(getMessagesThunk(chat.id));
+      // Refresh chat list to show new/updated chat in sidebar
+      dispatch(getAllChatsThunk());
+      // Navigate new chats to their permanent route
+      if (isNewChat) {
+        navigate(`/chat/${chat.id}`);
+      }
+    },
   });
 
   const isStreaming = status === 'streaming';
 
-  const [input, setInput] = useState('');
-  const [model, setModel] = useState<string>(models[0].id);
-  const [useWebSearch, setUseWebSearch] = useState<boolean>(false);
+  useEffect(() => {
+    dispatch(getMessagesThunk(chat.id));
+  }, [chat.id, dispatch]);
+
+  // Auto-generate title after first two messages
+  useEffect(() => {
+    if (chat.title) return;
+    if (messages.length !== 2) return;
+
+    dispatch(
+      generateTitleThunk({
+        chatId: chat.id,
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: m.parts
+            .filter((p) => p.type === 'text')
+            .map((p) => (p.type === 'text' ? p.text : ''))
+            .join(''),
+        })),
+        model: activeModel,
+      })
+    );
+  }, [activeModel, chat.id, chat.title, dispatch, messages]);
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {
@@ -177,44 +219,16 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
     }
   };
 
-  const dispatch = useAppDispatch();
-  const [internalModel, setInternalModel] = useState(chat.model);
-  const { state: sidebarState, toggleSidebar } = useSidebar();
-  const navigate = useNavigate();
-  const activeModel = isNewChat ? internalModel : chat.model;
-  const handleNewChat = () => {
-    navigate('/');
-  };
-
-  useEffect(() => {
-    dispatch(getMessagesThunk(chat.id));
-  }, [chat.id, dispatch]);
-
-  useEffect(() => {
-    if (chat.title) return;
-
-    if (messages.length !== 2) return;
-
-    dispatch(
-      generateTitleThunk({
-        chatId: chat.id,
-        messages: messages.map((m) => {
-          return {
-            role: m.role,
-            content: m.content,
-          };
-        }),
-        model: activeModel,
-      }),
-    );
-  }, [activeModel, chat.id, chat.title, dispatch, messages]);
-
   const handleModelChange = (value: string) => {
     if (!isNewChat) {
       dispatch(updateModelThunk({ chatId: chat.id, model: value }));
     } else {
       setInternalModel(value);
     }
+  };
+
+  const handleNewChat = () => {
+    navigate('/');
   };
 
   return (
@@ -243,7 +257,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
         </div>
       </div>
 
-      <div className="flex-1 max-h-[calc(100vh-52px)]  overflow-y-auto">
+      <div className="flex-1 max-h-[calc(100vh-52px)] overflow-y-auto">
         <div className="w-full max-w-3xl pb-64 mx-auto">
           <Conversation>
             <ConversationContent>
@@ -261,42 +275,29 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
                         message={message}
                         isLastMessage={index === messages.length - 1}
                         isStreaming={isStreaming}
+                        onRegenerate={regenerate}
                       />
                     </MessageContent>
                   </Message>
                 ))
               )}
-              {(status === 'submitted' || status === 'streaming') && (
+              {status === 'submitted' && (
                 <div>
-                  {status === 'submitted' && <Spinner />}
-                  <button type="button" onClick={() => stop()}>
-                    Stop
-                  </button>
+                  <Spinner />
                 </div>
               )}
             </ConversationContent>
-            {/* <ConversationDownload messages={messages} /> */}
             <ConversationScrollButton />
           </Conversation>
         </div>
       </div>
 
-      {/* <hr />
-
-      <div className="flex-1 w-full h-full">
-        <MessageHistory chatId={chat.id} />
-      </div>
-
       <div className="absolute bottom-6 left-0 right-0">
-        <MessageInput chatId={chat.id} model={activeModel} isNewChat={isNewChat} />
-      </div> */}
-
-      <div className="absolute bottom-6 left-0 right-0">
-        <div className="mx-auto w-full max-w-3xl px-4 ">
+        <div className="mx-auto w-full max-w-3xl px-4">
           <PromptInput onSubmit={handleSubmit} globalDrop multiple className="bg-background">
             <PromptInputAttachmentsDisplay />
 
-            <PromptInputBody className="">
+            <PromptInputBody>
               <PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
             </PromptInputBody>
             <PromptInputFooter>
@@ -316,25 +317,12 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
                   <GlobeIcon size={16} />
                   <span>Search</span>
                 </PromptInputButton>
-                <PromptInputSelect
-                  onValueChange={(value) => {
-                    setModel(value);
-                  }}
-                  value={model}
-                >
-                  <PromptInputSelectTrigger>
-                    <PromptInputSelectValue />
-                  </PromptInputSelectTrigger>
-                  <PromptInputSelectContent>
-                    {models.map((model) => (
-                      <PromptInputSelectItem key={model.id} value={model.id}>
-                        {model.name}
-                      </PromptInputSelectItem>
-                    ))}
-                  </PromptInputSelectContent>
-                </PromptInputSelect>
               </PromptInputTools>
-              <PromptInputSubmit disabled={!text && !status} status={status} />
+              <PromptInputSubmit
+                disabled={!input && status !== 'streaming'}
+                status={status}
+                onClick={status === 'streaming' ? stop : undefined}
+              />
             </PromptInputFooter>
           </PromptInput>
         </div>

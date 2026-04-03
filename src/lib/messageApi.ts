@@ -1,37 +1,22 @@
-import { collections } from './rxdb';
+import { trpcClient } from './trpc';
 import { Message } from './types';
 
-function toStoredMessage(message: Message) {
-  return {
+export async function getMessagesByChatId(chatId: string): Promise<Message[]> {
+  const result = await trpcClient.chat.chatMessages.query({ chatId });
+  return result as Message[];
+}
+
+export async function addMessage(message: Message): Promise<Message> {
+  const result = await trpcClient.chat.addMessage.mutate({
     id: message.id,
     chat_id: message.chat_id,
     role: message.role,
     content: message.content,
     model: message.model,
-    provider: message.provider,
     images: message.images,
-  };
-}
-
-export async function getMessagesByChatId(chatId: string) { //TODO
-  const result = await collections.messages
-    .find({
-      selector: {
-        chat_id: chatId
-      },
-      sort: [{ created_at: 'desc' }],
-    })
-    .exec();
-
-  return result.map((doc) => doc.toJSON());
-}
-
-export async function addMessage(message: Message) {
-  const created = {
-    ...toStoredMessage(message),
-    created_at: Date.now(),
-    updated_at: Date.now(),
-  };
-  const newObj = await collections.messages.insert(created);
-  return newObj.toJSON();
+    eval_count: message.eval_count,
+    created_at: message.created_at,
+    updated_at: message.updated_at,
+  });
+  return result as Message;
 }
