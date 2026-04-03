@@ -93,6 +93,11 @@ const MessageParts = ({
     .join('');
 
   const hasVisibleContent = fullText.length > 0 || hasReasoning;
+  // isLoadingState covers the gap between streaming start and first token arrival.
+  // status === 'submitted' is not handled separately because the tRPC transport
+  // synchronously enqueues 'start'/'text-start' before any network round-trip,
+  // collapsing submitted→streaming into a single React render batch.
+  // If the transport is replaced with one that delays these chunks, revisit this.
   const isLoadingState =
     message.role === 'assistant' &&
     isLastMessage &&
