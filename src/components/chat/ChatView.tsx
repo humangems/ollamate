@@ -171,7 +171,7 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
     [chat.id, activeModel]
   );
 
-  const { messages, sendMessage, status, stop, regenerate } = useChat({
+  const { messages, sendMessage, status, stop, regenerate, error } = useChat({
     transport,
     messages: historicalMessages.map(toUIMessage),
     onFinish: () => {
@@ -290,6 +290,9 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
                 <div>
                   <Spinner />
                 </div>
+              )}
+              {error && (
+                <div className="text-destructive text-sm px-2 py-1">{error.message}</div>
               )}
             </ConversationContent>
             <ConversationScrollButton />
