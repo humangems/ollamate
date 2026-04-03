@@ -214,9 +214,6 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
 
   const isStreaming = status === 'streaming';
 
-  useEffect(() => {
-    dispatch(getMessagesThunk(chat.id));
-  }, [chat.id, dispatch]);
 
   // Auto-generate title after first two messages
   useEffect(() => {
