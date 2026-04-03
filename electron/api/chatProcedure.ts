@@ -100,6 +100,8 @@ const chatProcedure = router({
     .subscription(async function* ({ input }) {
       const { chatId, model, userMessage } = input;
 
+      console.log(`[chat] [${chatId}] [${model}] >>> user: ${userMessage}`);
+
       // Ensure chat record exists
       await dbService.upsertChat({ id: chatId, model });
 
@@ -133,6 +135,8 @@ const chatProcedure = router({
       const baseURL = ollamaConfig?.url ?? 'http://127.0.0.1:11434';
       const provider = createOllama({ baseURL });
 
+      console.log(`[chat] [${chatId}] [${model}] streaming start (history: ${history.length} messages)`);
+
       const result = streamText({
         model: provider(model, { think: true }),
         system: 'You are a helpful assistant.',
@@ -147,13 +151,16 @@ const chatProcedure = router({
           textContent += part.text;
           yield { type: 'text-delta' as const, text: part.text };
         } else if (part.type === 'reasoning-start') {
+          console.log(`[chat] [${chatId}] reasoning start`);
           yield { type: 'reasoning-start' as const };
         } else if (part.type === 'reasoning-delta') {
           reasoningContent += part.text;
           yield { type: 'reasoning-delta' as const, text: part.text };
         } else if (part.type === 'reasoning-end') {
+          console.log(`[chat] [${chatId}] reasoning end (${reasoningContent.length} chars)`);
           yield { type: 'reasoning-end' as const };
         } else if (part.type === 'error') {
+          console.error(`[chat] [${chatId}] stream error:`, part.error);
           throw part.error instanceof Error ? part.error : new Error(String(part.error));
         }
       }
@@ -174,6 +181,8 @@ const chatProcedure = router({
         created_at: Date.now(),
         updated_at: Date.now(),
       });
+
+      console.log(`[chat] [${chatId}] [${model}] <<< assistant: ${textContent.length} chars, reasoning: ${reasoningContent.length} chars, tokens in/out: ${usage.inputTokens}/${usage.outputTokens}`);
 
       yield {
         type: 'finish' as const,
