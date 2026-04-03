@@ -92,6 +92,22 @@ const MessageParts = ({
     .map((p) => (p.type === 'text' ? p.text : ''))
     .join('');
 
+  const hasVisibleContent = fullText.length > 0 || hasReasoning;
+  const isLoadingState =
+    message.role === 'assistant' &&
+    isLastMessage &&
+    isStreaming &&
+    !hasVisibleContent;
+
+  if (isLoadingState) {
+    return (
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Spinner className="size-4" />
+        <span className="text-sm">Thinking...</span>
+      </div>
+    );
+  }
+
   return (
     <>
       {hasReasoning && (
@@ -285,11 +301,6 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
                     </MessageContent>
                   </Message>
                 ))
-              )}
-              {status === 'submitted' && (
-                <div>
-                  <Spinner />
-                </div>
               )}
               {error && (
                 <div className="text-destructive text-sm px-2 py-1">{error.message}</div>
