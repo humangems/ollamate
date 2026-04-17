@@ -1,5 +1,4 @@
 import { ipcRenderer, contextBridge } from 'electron';
-// @ts-ignore
 import { exposeElectronTRPC } from 'electron-trpc-experimental/preload';
 
 // Expose tRPC bridge (uses window.electronTRPC namespace)

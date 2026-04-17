@@ -10,13 +10,17 @@ function getLastUserMessageText(messages: UIMessage[]): string {
   return '';
 }
 
-export function createTRPCChatTransport(chatId: string, model: string): ChatTransport<UIMessage> {
+export function createTRPCChatTransport(
+  chatId: string,
+  getModel: () => string,
+): ChatTransport<UIMessage> {
   return {
     sendMessages: async ({ messages, abortSignal }) => {
       const userMessage = getLastUserMessageText(messages);
       const textPartId = generateId();
       const messageId = generateId();
       const reasoningPartId = generateId();
+      const model = getModel();
 
       return new ReadableStream<UIMessageChunk>({
         start(controller) {

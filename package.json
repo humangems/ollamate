@@ -17,6 +17,8 @@
     "publish-arm64": "electron-forge publish --arch=arm64",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "db:generate": "drizzle-kit generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -81,6 +83,8 @@
     "@reduxjs/toolkit": "2.11.2",
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.2.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/lodash": "4.17.24",
     "@types/node": "25.5.0",
@@ -101,6 +105,7 @@
     "eslint-plugin-react-refresh": "0.5.2",
     "framer-motion": "12.38.0",
     "globals": "17.4.0",
+    "happy-dom": "^20.9.0",
     "lodash": "4.17.23",
     "lodash-es": "4.17.23",
     "lucide-react": "^1.7.0",
@@ -124,7 +129,8 @@
     "typescript": "6.0.2",
     "vite": "8.0.3",
     "vite-plugin-electron": "0.29.1",
-    "vite-plugin-electron-renderer": "^0.14.6"
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vitest": "^4.1.4"
   },
   "main": "dist-electron/main.js",
   "packageManager": "yarn@1.22.22"

@@ -1,9 +1,10 @@
 import { cn } from '@/lib/utils';
 import { CopyIcon, GlobeIcon, PanelLeftIcon, PenBoxIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chat } from '../../lib/types';
 import {
+  chatSelectors,
   generateTitleThunk,
   updateModelThunk,
   getAllChatsThunk,
@@ -195,61 +196,68 @@ export default function ChatView({ chat, isNewChat = false }: ChatViewProps) {
   const [useWebSearch, setUseWebSearch] = useState<boolean>(false);
   const [input, setInput] = useState('');
 
-  const activeModel = isNewChat ? internalModel : chat.model;
+  // Prefer the Redux chat record so title/model updates reflect immediately.
+  // Falls back to the prop for new chats before their first Redux presence.
+  const reduxChat = useAppSelector((state: RootState) =>
+    chatSelectors.selectById(state.chats, chat.id),
+  );
+  const liveChat = reduxChat ?? chat;
+  const activeModel = isNewChat ? internalModel : liveChat.model;
 
   // Load historical messages from Redux (populated from SQLite via tRPC)
   const historicalMessages = useAppSelector((state: RootState) =>
     selectMessagesByChatId(state, chat.id),
   );
 
-  // Create tRPC-backed transport, recreated when chatId or model changes
+  // Transport is stable per chat; the model is resolved at send-time from a
+  // ref so switching models mid-stream never tears down the active subscription.
+  // The ref is only ever read inside sendMessages (an event-handler context),
+  // so the render-phase warnings are safe to suppress here.
+  const modelRef = useRef(activeModel);
+  useEffect(() => {
+    modelRef.current = activeModel;
+  }, [activeModel]);
+  const titleGeneratedRef = useRef<boolean>(Boolean(liveChat.title));
   const transport = useMemo(
-    () => createTRPCChatTransport(chat.id, activeModel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [chat.id, activeModel],
+    // eslint-disable-next-line react-hooks/refs
+    () => createTRPCChatTransport(chat.id, () => modelRef.current),
+    [chat.id],
   );
 
   const { messages, sendMessage, status, stop, regenerate, error } = useChat({
     transport,
     messages: historicalMessages.map(toUIMessage),
-    onFinish: () => {
-      if (isNewChat) {
-        // Wait for both thunks before navigating so historicalMessages is populated
-        // when the new ChatView mounts (useChat only uses messages prop as initial value)
-        Promise.all([dispatch(getMessagesThunk(chat.id)), dispatch(getAllChatsThunk())]).then(
-          () => {
-            navigate(`/chat/${chat.id}`);
-          },
+    onFinish: ({ messages: finalMessages }) => {
+      const refreshChats = dispatch(getAllChatsThunk());
+      const refreshMessages = dispatch(getMessagesThunk(chat.id));
+
+      // Fire title generation exactly once, after the first turn completes.
+      if (!titleGeneratedRef.current && finalMessages.length >= 2) {
+        titleGeneratedRef.current = true;
+        dispatch(
+          generateTitleThunk({
+            chatId: chat.id,
+            messages: finalMessages.slice(0, 2).map((m) => ({
+              role: m.role,
+              content: m.parts
+                .filter((p) => p.type === 'text')
+                .map((p) => (p.type === 'text' ? p.text : ''))
+                .join(''),
+            })),
+            model: modelRef.current,
+          }),
         );
-      } else {
-        dispatch(getMessagesThunk(chat.id));
-        dispatch(getAllChatsThunk());
+      }
+
+      if (isNewChat) {
+        Promise.all([refreshChats, refreshMessages]).then(() => {
+          navigate(`/chat/${chat.id}`);
+        });
       }
     },
   });
 
   const isStreaming = status === 'streaming';
-
-
-  // Auto-generate title after first two messages
-  useEffect(() => {
-    if (chat.title) return;
-    if (messages.length !== 2) return;
-
-    dispatch(
-      generateTitleThunk({
-        chatId: chat.id,
-        messages: messages.map((m) => ({
-          role: m.role,
-          content: m.parts
-            .filter((p) => p.type === 'text')
-            .map((p) => (p.type === 'text' ? p.text : ''))
-            .join(''),
-        })),
-        model: activeModel,
-      }),
-    );
-  }, [activeModel, chat.id, chat.title, dispatch, messages]);
 
   const handleSubmit = (message: PromptInputMessage) => {
     if (message.text.trim()) {

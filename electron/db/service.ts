@@ -1,28 +1,15 @@
 import { drizzle, BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { eq, desc, asc } from 'drizzle-orm';
-import path from 'node:path';
-import { app } from 'electron';
-import isDev from 'electron-is-dev';
 import { uuidv7 } from 'uuidv7';
-import { getDataDir } from './dbUtil';
 import * as schema from './schema';
 
-class DatabaseService {
+export class DatabaseService {
   private db: BetterSQLite3Database<typeof schema>;
 
-  constructor() {
-    const dbPath = path.join(getDataDir(), 'ollamate.db');
+  constructor(dbPath: string, migrationsFolder: string) {
     this.db = drizzle({ connection: { source: dbPath }, schema });
-    this.init();
-  }
-
-  private init() {
-    const drizzleDir = isDev
-      ? path.join(app.getAppPath(), 'drizzle')
-      : path.join(process.resourcesPath, 'drizzle');
-
-    migrate(this.db, { migrationsFolder: drizzleDir });
+    migrate(this.db, { migrationsFolder });
   }
 
   async getAllChats(): Promise<schema.DbChat[]> {
@@ -102,5 +89,3 @@ class DatabaseService {
     return result[0];
   }
 }
-
-export const dbService = new DatabaseService();

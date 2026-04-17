@@ -8,15 +8,22 @@ import { useAppDispatch, useAppSelector } from '../redux/store';
 export default function ChatPage() {
   const { chatId } = useParams();
   const dispatch = useAppDispatch();
-  const [messagesReady, setMessagesReady] = useState(false);
+  const [loadedChatId, setLoadedChatId] = useState<string | null>(null);
 
   const chat = useAppSelector((state) => chatSelectors.selectById(state.chats, chatId!));
 
   useEffect(() => {
     if (!chatId) return;
-    setMessagesReady(false);
-    dispatch(getMessagesThunk(chatId)).then(() => setMessagesReady(true));
+    let cancelled = false;
+    dispatch(getMessagesThunk(chatId)).then(() => {
+      if (!cancelled) setLoadedChatId(chatId);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [chatId, dispatch]);
+
+  const messagesReady = loadedChatId === chatId;
 
   if (!chat || !messagesReady) return null;
 

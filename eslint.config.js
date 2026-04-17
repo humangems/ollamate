@@ -54,7 +54,9 @@ export default [
     files: [
       'src/components/theme-provider.tsx',
       'src/components/ui/button.tsx',
+      'src/components/ui/button-group.tsx',
       'src/components/ui/sidebar.tsx',
+      'src/components/ai-elements/*.tsx',
       'src/routes/*.tsx',
     ],
     rules: {

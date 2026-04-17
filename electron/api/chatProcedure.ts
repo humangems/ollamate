@@ -4,7 +4,7 @@ import { createOllama } from 'ai-sdk-ollama';
 import { z } from 'zod';
 import { uuidv7 } from 'uuidv7';
 import { publicProcedure, router } from './trpcServer';
-import { dbService } from '../db/service';
+import { dbService } from '../db/singleton';
 import { settingStore } from '../setting-store';
 
 const messageSchema = z.object({
@@ -137,59 +137,83 @@ const chatProcedure = router({
 
       console.log(`[chat] [${chatId}] [${model}] streaming start (history: ${history.length} messages)`);
 
-      const result = streamText({
-        model: provider(model, { think: true }),
-        system: 'You are a helpful assistant.',
-        messages: aiMessages,
-      });
-
       let reasoningContent = '';
       let textContent = '';
+      let outputTokens: number | undefined;
+      let inputTokens: number | undefined;
+      let streamError: Error | undefined;
 
-      for await (const part of result.fullStream) {
-        if (part.type === 'text-delta') {
-          textContent += part.text;
-          yield { type: 'text-delta' as const, text: part.text };
-        } else if (part.type === 'reasoning-start') {
-          console.log(`[chat] [${chatId}] reasoning start`);
-          yield { type: 'reasoning-start' as const };
-        } else if (part.type === 'reasoning-delta') {
-          reasoningContent += part.text;
-          yield { type: 'reasoning-delta' as const, text: part.text };
-        } else if (part.type === 'reasoning-end') {
-          console.log(`[chat] [${chatId}] reasoning end (${reasoningContent.length} chars)`);
-          yield { type: 'reasoning-end' as const };
-        } else if (part.type === 'error') {
-          console.error(`[chat] [${chatId}] stream error:`, part.error);
-          throw part.error instanceof Error ? part.error : new Error(String(part.error));
+      try {
+        const result = streamText({
+          model: provider(model, { think: true }),
+          system: 'You are a helpful assistant.',
+          messages: aiMessages,
+        });
+
+        try {
+          for await (const part of result.fullStream) {
+            if (part.type === 'text-delta') {
+              textContent += part.text;
+              yield { type: 'text-delta' as const, text: part.text };
+            } else if (part.type === 'reasoning-start') {
+              console.log(`[chat] [${chatId}] reasoning start`);
+              yield { type: 'reasoning-start' as const };
+            } else if (part.type === 'reasoning-delta') {
+              reasoningContent += part.text;
+              yield { type: 'reasoning-delta' as const, text: part.text };
+            } else if (part.type === 'reasoning-end') {
+              console.log(`[chat] [${chatId}] reasoning end (${reasoningContent.length} chars)`);
+              yield { type: 'reasoning-end' as const };
+            } else if (part.type === 'error') {
+              console.error(`[chat] [${chatId}] stream error:`, part.error);
+              streamError = part.error instanceof Error ? part.error : new Error(String(part.error));
+              break;
+            }
+          }
+        } catch (err) {
+          streamError = err instanceof Error ? err : new Error(String(err));
+          console.error(`[chat] [${chatId}] stream iteration failed:`, streamError);
         }
+
+        try {
+          const usage = await result.usage;
+          outputTokens = usage.outputTokens ?? undefined;
+          inputTokens = usage.inputTokens ?? undefined;
+        } catch {
+          // usage unavailable on aborted/failed streams
+        }
+      } catch (err) {
+        streamError = err instanceof Error ? err : new Error(String(err));
+        console.error(`[chat] [${chatId}] stream setup failed:`, streamError);
+      } finally {
+        const storedContent = reasoningContent
+          ? `<think>${reasoningContent}</think>${textContent}`
+          : textContent;
+
+        await dbService.addMessage({
+          id: uuidv7(),
+          chat_id: chatId,
+          role: 'assistant',
+          content: storedContent,
+          model,
+          eval_count: outputTokens,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        });
+
+        console.log(`[chat] [${chatId}] [${model}] <<< assistant: ${textContent.length} chars, reasoning: ${reasoningContent.length} chars, tokens in/out: ${inputTokens}/${outputTokens}${streamError ? ` (error: ${streamError.message})` : ''}`);
       }
 
-      const storedContent = reasoningContent
-        ? `<think>${reasoningContent}</think>${textContent}`
-        : textContent;
-
-      // Persist completed assistant message
-      const usage = await result.usage;
-      await dbService.addMessage({
-        id: uuidv7(),
-        chat_id: chatId,
-        role: 'assistant',
-        content: storedContent,
-        model,
-        eval_count: usage.outputTokens ?? undefined,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      });
-
-      console.log(`[chat] [${chatId}] [${model}] <<< assistant: ${textContent.length} chars, reasoning: ${reasoningContent.length} chars, tokens in/out: ${usage.inputTokens}/${usage.outputTokens}`);
+      if (streamError) {
+        throw streamError;
+      }
 
       yield {
         type: 'finish' as const,
         finishReason: 'stop',
         usage: {
-          inputTokens: usage.inputTokens ?? 0,
-          outputTokens: usage.outputTokens ?? 0,
+          inputTokens: inputTokens ?? 0,
+          outputTokens: outputTokens ?? 0,
         },
       };
     }),
