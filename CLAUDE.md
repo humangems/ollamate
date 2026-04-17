@@ -9,10 +9,14 @@ yarn dev          # Start Vite dev server (renderer only)
 yarn start        # Start full Electron app (development)
 yarn build        # TypeScript compile + Vite build
 yarn lint         # ESLint on TypeScript/TSX files
+yarn test         # Run Vitest suite (auto-rebuilds better-sqlite3 for Node, then restores Electron ABI)
+yarn rebuild      # Manually rebuild better-sqlite3 for Electron ABI
 yarn db:generate  # Generate Drizzle ORM migrations
 yarn make-x64     # Package macOS x64 installer
 yarn make-arm64   # Package macOS arm64 installer
 ```
+
+> **better-sqlite3 ABI**: tests run on Node, the app runs on Electron — they need different native bindings. `yarn test` wraps the rebuild in `scripts/run-tests.sh` so the Electron ABI is always restored on exit (including Ctrl-C / test failures). If `yarn start` ever complains about `NODE_MODULE_VERSION`, run `yarn rebuild`.
 
 ## Architecture
 

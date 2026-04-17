@@ -33,11 +33,12 @@ export default function SidebarChatItem({
       navigate('/');
     });
   };
+  const displayTitle = chat.title?.trim() ? chat.title : 'New chat';
   return (
     <SidebarMenuItem key={chat.id}>
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link to={`/chat/${chat.id}`} title={chat.title}>
-          <span>{chat.title}</span>
+        <Link to={`/chat/${chat.id}`} title={displayTitle}>
+          <span>{displayTitle}</span>
         </Link>
       </SidebarMenuButton>
 
